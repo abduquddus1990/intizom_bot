@@ -1,0 +1,29 @@
+# Python virtual environment
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment & Secrets (Security Best Practices)
+.env
+*.env.local
+
+# Logs and runtime files
+*.log
+*.tmp
+_status.json
+_status.json.tmp
+
+# Recordings and audio data
+recordings/
+*.wav
+*.mp3
+*.ogg
+
+# Vercel & Cache
+.vercel/
+node_modules/
+dist/
+build/
