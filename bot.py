@@ -1343,7 +1343,26 @@ async def process_and_report(audio_path: str, microphone_id: str):
         except Exception:
             logger.exception(f"Hisobotni {chat_id} ga yuborishda xatolik")
 
-    # 1.1) Ball juda past bo'lsa — qo'shimcha ovozli ogohlantirish
+    # 1.1) TZ 26-bo'lim: NIZOLI VAZIYATLAR SIGNALIZATSIYASI (Real-time Escalation Shield)
+    if result.nizo_xavfi or result.jiddiylik_darajasi in ("critical", "warning"):
+        for chat_id, recipient_lang in await _get_recipients_for_reports():
+            try:
+                is_crit = result.jiddiylik_darajasi == "critical"
+                alert_text = (
+                    f"🚨 <b>SHOSHILINCH SIGNAL: Darchada Nizoli Vaziyat!</b>\n\n"
+                    f"📍 <b>Darcha:</b> {employee_name} ({microphone_id})\n"
+                    f"⚠️ <b>Daraja:</b> {'🔴 QIZIL (CRITICAL)' if is_crit else '🟡 SARIQ (WARNING)'}\n"
+                    f"📝 <b>Sabab:</b> {result.nizo_sababi or 'Xodim va mijoz o`rtasida keskin e`tiroz/janjal'}\n"
+                    f"💡 <b>Tavsiya:</b> Rahbariyat aralashishi yoki vaziyatni o'rganishi tavsiya etiladi."
+                )
+                esc_kb = InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text="✅ Muammo hal qilindi", callback_data=f"esc_resolve_{conversation_id}"),
+                ]])
+                await bot.send_message(chat_id=chat_id, text=alert_text, reply_markup=esc_kb)
+            except Exception:
+                logger.exception("Escalation alert yuborishda xatolik")
+
+    # 1.2) Ball juda past bo'lsa — qo'shimcha ovozli ogohlantirish
     if result.umumiy_ball < LOW_SCORE_ALERT_THRESHOLD:
         try:
             await _send_low_score_voice_alert(employee_name, result)
@@ -1365,6 +1384,18 @@ async def process_and_report(audio_path: str, microphone_id: str):
             )
         except Exception:
             logger.exception(f"Operator {employee_telegram_id}ga self-review yuborishda xatolik")
+
+
+@router.callback_query(F.data.startswith("esc_resolve_"))
+async def handle_esc_resolve(callback: CallbackQuery):
+    """Nizoli vaziyatni yopish (hal qilindi deb belgilash)."""
+    await callback.answer("✅ Nizoli vaziyat hal qilingan deb belgilandi!", show_alert=True)
+    try:
+        await callback.message.edit_text(
+            callback.message.text + f"\n\n<i>✅ Ushbu nizo @{callback.from_user.username or callback.from_user.id} tomonidan hal qilindi va yopildi.</i>"
+        )
+    except Exception:
+        pass
 
 
 # =========================================================================

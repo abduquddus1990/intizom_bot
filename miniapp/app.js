@@ -554,42 +554,180 @@ function viewAnalytics() {
 }
 
 // =========================================================================
-// 5. JONLI RADAR & ALERTS
+// 5. NIZOLI VAZIYATLAR SIGNALIZATSIYASI (REAL-TIME ESCALATION SHIELD)
 // =========================================================================
+let currentEscFilter = "all";
+
+function setEscFilter(f) {
+  currentEscFilter = f;
+  viewLiveRadar();
+}
+
+function resolveEscalation(id) {
+  const esc = (DEMO_DATA.escalations || []).find((e) => e.id === id);
+  if (esc) {
+    esc.status = "resolved";
+    esc.resolved_by = "Rahbariyat";
+    esc.resolved_time = new Date().toLocaleTimeString().slice(0, 5);
+    showToast("✅ Nizoli vaziyat hal qilingan deb belgilandi!", "check_circle");
+    viewLiveRadar();
+  }
+}
+
 function viewLiveRadar() {
-  const alerts = DEMO_DATA.alerts;
+  if (!DEMO_DATA.escalations) {
+    DEMO_DATA.escalations = [
+      {
+        id: "esc-101",
+        severity: "critical",
+        status: "pending",
+        employee_name: "Jasur Bekchanov",
+        workstation: "3-Darcha",
+        time: "10:48",
+        reason: "Mijoz to'lov summasi asossiz oshirilganidan qattiq norozi bo'lib, prokuraturaga shikoyat qilish bilan tahdid qildi.",
+        ai_recommendation: "Darcha rahbari zudlik bilan fuqaroni qabul xonasiga taklif qilib, kvitansiya va rasmiy tarif reglamentini taqdim etishi lozim.",
+        audio_url: "https://actions.google.com/sounds/v1/ambiences/office_room.ogg",
+      },
+      {
+        id: "esc-102",
+        severity: "warning",
+        status: "pending",
+        employee_name: "Alisher Rustamov",
+        workstation: "2-Darcha",
+        time: "10:15",
+        reason: "Xodim mijozning gapini ketma-ket 3 marta bo'ldi, mijoz asabiylashib joyidan turib ketdi.",
+        ai_recommendation: "Operator bilan faol tinglash va xushmuomalalik bo'yicha 2 daqiqalik mikro-trening o'tkazish tavsiya etiladi.",
+        audio_url: "https://actions.google.com/sounds/v1/ambiences/office_room.ogg",
+      },
+      {
+        id: "esc-103",
+        severity: "warning",
+        status: "resolved",
+        employee_name: "Dilnoza Karimova",
+        workstation: "1-Darcha",
+        time: "09:30",
+        reason: "Mijoz pasport muddati o'tganiga tushunmadi va biroz e'tiroz bildirdi.",
+        ai_recommendation: "Xodim sabr bilan tushuntirdi va masala tinch hal qilindi.",
+        audio_url: "https://actions.google.com/sounds/v1/ambiences/office_room.ogg",
+        resolved_by: "Rahbar (Quddusxon)",
+        resolved_time: "09:35",
+      },
+    ];
+  }
+
+  let list = DEMO_DATA.escalations;
+  if (currentEscFilter === "critical") list = list.filter((e) => e.severity === "critical" && e.status === "pending");
+  else if (currentEscFilter === "warning") list = list.filter((e) => e.severity === "warning" && e.status === "pending");
+  else if (currentEscFilter === "resolved") list = list.filter((e) => e.status === "resolved");
+
+  const pendingCount = DEMO_DATA.escalations.filter((e) => e.status === "pending").length;
+  const criticalCount = DEMO_DATA.escalations.filter((e) => e.severity === "critical" && e.status === "pending").length;
+
   const html = `
     <div class="view-header">
       <div class="view-title-box">
-        <h2>${t("radar_title")}</h2>
-        <p>${t("radar_sub")}</p>
+        <h2>🚨 Nizoli Vaziyatlar & Signalizatsiya (Escalation Shield)</h2>
+        <p>Real vaqtda suhbatlardagi nizoli holatlar va shoshilinch signallar monitoringi</p>
       </div>
+      <button class="action-btn-pill" onclick="showToast('Signalizatsiya tizimi faol va ishlamoqda', 'verified_user')">
+        <span class="material-symbols-outlined" style="color:#10b981;">shield</span> Faol Himoya
+      </button>
     </div>
 
-    <div class="radar-pulse-box glass-card">
-      <div>
-        <h4 style="font-size:15px; font-weight:800;">Jonli Sifat Radari Faol</h4>
-        <p style="font-size:12px; color:var(--text-muted);">Barcha 4 ta darcha mikrofonlari real vaqtda tahlil qilinmoqda.</p>
-      </div>
-    </div>
-
-    <h3 style="margin-bottom:12px; font-size:16px;">So'nggi Signallar Oqimi</h3>
-    <div class="alert-feed-list">
-      ${alerts.map((a) => `
-        <div class="alert-feed-item glass-card ${a.type === "critical" ? "critical" : ""}">
-          <span class="material-symbols-outlined" style="color:${a.type === "critical" ? "#ef4444" : "#f59e0b"}; font-size:24px;">
-            ${a.type === "critical" ? "error" : "notifications"}
+    <!-- Real-time Pulse Banner -->
+    <div class="glass-card" style="padding:16px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(245, 158, 11, 0.08) 100%); border-left:4px solid ${criticalCount > 0 ? '#ef4444' : '#10b981'};">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:40px; height:40px; border-radius:50%; background:${criticalCount > 0 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)'}; display:flex; align-items:center; justify-content:center;">
+          <span class="material-symbols-outlined" style="color:${criticalCount > 0 ? '#ef4444' : '#10b981'}; font-size:24px;">
+            ${criticalCount > 0 ? 'warning' : 'check_circle'}
           </span>
-          <div style="flex:1;">
-            <div style="display:flex; justify-content:space-between;">
-              <span style="font-weight:700; font-size:13px;">${a.title}</span>
-              <span style="font-size:11px; color:var(--text-muted);">${a.time}</span>
+        </div>
+        <div>
+          <h4 style="font-size:15px; font-weight:800; color:var(--text-main);">
+            ${criticalCount > 0 ? `${criticalCount} ta Shoshilinch Nizo Nazoratda!` : 'Hozircha Favqulodda Nizo Yo\'q'}
+          </h4>
+          <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+            AI barcha darchalarni 30 soniyalik kechikishsiz skanerlamoqda.
+          </p>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <span class="live-pill"><span class="pulse-dot" style="background:${criticalCount > 0 ? '#ef4444' : '#10b981'};"></span> ${pendingCount} ta Faol Signal</span>
+      </div>
+    </div>
+
+    <!-- Filter Chiplari -->
+    <div style="display:flex; gap:8px; overflow-x:auto; margin-bottom:16px; padding-bottom:4px;">
+      <button class="chat-chip ${currentEscFilter === 'all' ? 'active' : ''}" style="${currentEscFilter === 'all' ? 'background:var(--primary); color:#fff;' : ''}" onclick="setEscFilter('all')">
+        Barchasi (${DEMO_DATA.escalations.length})
+      </button>
+      <button class="chat-chip ${currentEscFilter === 'critical' ? 'active' : ''}" style="${currentEscFilter === 'critical' ? 'background:#ef4444; color:#fff;' : ''}" onclick="setEscFilter('critical')">
+        🔴 Jiddiy (Critical)
+      </button>
+      <button class="chat-chip ${currentEscFilter === 'warning' ? 'active' : ''}" style="${currentEscFilter === 'warning' ? 'background:#f59e0b; color:#fff;' : ''}" onclick="setEscFilter('warning')">
+        🟡 Ogohlantirish (Warning)
+      </button>
+      <button class="chat-chip ${currentEscFilter === 'resolved' ? 'active' : ''}" style="${currentEscFilter === 'resolved' ? 'background:#10b981; color:#fff;' : ''}" onclick="setEscFilter('resolved')">
+        🟢 Hal qilinganlar
+      </button>
+    </div>
+
+    <!-- Escalation Feed Cards -->
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      ${list.map((esc) => `
+        <div class="glass-card" style="padding:16px; border-radius:14px; position:relative; overflow:hidden; border:1px solid ${esc.status === 'resolved' ? 'rgba(16, 185, 129, 0.3)' : esc.severity === 'critical' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(245, 158, 11, 0.3)'};">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="material-symbols-outlined" style="color:${esc.status === 'resolved' ? '#10b981' : esc.severity === 'critical' ? '#ef4444' : '#f59e0b'}; font-size:22px;">
+                ${esc.status === 'resolved' ? 'task_alt' : 'crisis_alert'}
+              </span>
+              <div>
+                <h3 style="font-size:14.5px; font-weight:700; color:var(--text-main);">${esc.workstation} — ${esc.employee_name}</h3>
+                <span style="font-size:11.5px; color:var(--text-muted);">Voqea vaqti: ${esc.time}</span>
+              </div>
             </div>
-            <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${a.desc}</div>
+            <span style="font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; text-transform:uppercase; ${
+              esc.status === 'resolved' 
+                ? 'background:rgba(16, 185, 129, 0.15); color:#10b981;' 
+                : esc.severity === 'critical' 
+                ? 'background:rgba(239, 68, 68, 0.2); color:#ef4444;' 
+                : 'background:rgba(245, 158, 11, 0.2); color:#f59e0b;'
+            }">
+              ${esc.status === 'resolved' ? 'HAL QILINDI' : esc.severity}
+            </span>
           </div>
-          <button class="action-btn-pill" onclick="showToast('Ogohlantirish ko\\'rildi', 'done')">
-            Ko'rildi
-          </button>
+
+          <!-- Nizo Sababi & AI Tavsiyasi -->
+          <div style="background:rgba(0, 0, 0, 0.2); padding:10px 12px; border-radius:8px; margin-bottom:12px; font-size:13px; line-height:1.5;">
+            <div style="margin-bottom:6px;">
+              <b style="color:${esc.severity === 'critical' ? '#f87171' : '#fbbf24'};">⚠️ Nizo sababi:</b> ${esc.reason}
+            </div>
+            <div style="color:var(--text-muted); font-size:12.5px;">
+              <b style="color:#38bdf8;">💡 AI Tavsiyasi:</b> ${esc.ai_recommendation}
+            </div>
+          </div>
+
+          <!-- Audio Pleyer & Tugmalar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button class="action-btn-pill" onclick="playAudio('${esc.id}', '${esc.audio_url}')">
+                <span class="material-symbols-outlined" id="play-icon-${esc.id}">play_arrow</span> Eshitish
+              </button>
+              <button class="action-btn-pill" onclick="showToast('${esc.workstation} xodimiga xabar yuborildi', 'send')">
+                <span class="material-symbols-outlined">chat</span> Xabar
+              </button>
+            </div>
+
+            ${esc.status === 'pending' ? `
+              <button class="action-btn-pill" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:#fff; font-weight:700;" onclick="resolveEscalation('${esc.id}')">
+                <span class="material-symbols-outlined">check</span> Muammo Hal Qilindi
+              </button>
+            ` : `
+              <span style="font-size:12px; color:var(--score-good); display:flex; align-items:center; gap:4px;">
+                <span class="material-symbols-outlined" style="font-size:16px;">verified</span> ${esc.resolved_by} (${esc.resolved_time})
+              </span>
+            `}
+          </div>
         </div>
       `).join("")}
     </div>

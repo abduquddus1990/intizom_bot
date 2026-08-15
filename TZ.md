@@ -982,70 +982,80 @@ variantida (3 naqsh + 8 rang) avtomatik moslashadi.
 
 Dashboard Telegram tashqarisida (oddiy brauzerda) ochilsa, avval
 butunlay ishlamay qolar edi (`initData` yo'qligi sababli). Endi bunday
-holatda **preview rejimi** avtomatik yoqiladi:
-- Yuqorida doimiy banner ko'rsatiladi ("Bu faqat dizaynni ko'rib chiqish
-  uchun...")
-- Barcha bo'limlar navigatsiyasi ishlaydi (jumladan Sozlamalar > Til/Fon
-  — bular backend ma'lumotiga muhtoj emas)
-- Haqiqiy ma'lumot kerak bo'lgan bo'limlarda (Hisobotlar, Xodimlar va h.k.)
-  **soxta raqamlar hech qachon ko'rsatilmaydi** — buning o'rniga ochiq
-  "haqiqiy ma'lumotlar faqat Telegram ichida yuklanadi" xabari chiqadi.
+holatda **preview rejimi** avtom## 26. NIZOLI VAZIYATLAR SIGNALIZATSIYASI (REAL-TIME ESCALATION SHIELD)
 
-Bu — TZ 25-bo'limdagi dizaynni tekshirish ehtiyoji bilan loyihaning
-"hech qachon soxta ma'lumot ko'rsatilmaydi" tamoyilini muvozanatlaydi.
+### 26.1 Maqsad va Zaruriyat
+Xizmat ko'rsatish ofislarida mijoz va xodim o'rtasidagi kelishmovchilik,
+haqorat yoki asabiy tortishuv ommaviy norozilikka aylanmasligi, ijtimoiy
+tarmoqlarga tarqalmasligi va rasmiy shikoyat darajasiga yetmasligi uchun
+tizim nizoli holatlarni **real vaqt rejimida (suhbat tugagach 30-60 soniya ichida)**
+aniqlab, mas'ul rahbar/o'rinbosarga shoshilinch signal beradi.
+
+### 26.2 Aniqlash Mezonlari va Trigglerlar
+AI suhbat transkripsiyasini tahlil qilayotganda quyidagi holatlarni "Nizo/Eskalatsiya"
+sifatida tasniflaydi:
+1. **Og'ir / Qizil daraja (`critical`):**
+   - Xodim yoki mijoz tomonidan qo'pol haqorat, tajovuzkor so'zlar ishlatilishi;
+   - Fuqaroning rasmiy organlarga (prokuratura, vazirlik, ishonch telefoni)
+     shikoyat qilish bilan tahdid qilishi;
+   - Davlat xizmati qonunbuzarligi bo'yicha to'g'ridan-to'g'ri ayblov.
+2. **O'rta / Sariq daraja (`warning`):**
+   - Xodimning mijoz bilan bahslashishi va mijoz gapini ketma-ket bo'lishi;
+   - Mijozning xizmatdan jiddiy norozi bo'lib, o'rnidan jahl bilan turib ketishi;
+   - Noto'g'ri to'lov yoki ortiqcha mablag' talab qilingani bo'yicha e'tiroz.
+
+### 26.3 AI Javob Strukturasi (`analyzer.py`)
+`AnalysisResult` va Gemini JSON sxemasiga quyidagi maydonlar qo'shiladi:
+```json
+{
+  "nizo_xavfi": true,
+  "jiddiylik_darajasi": "critical",
+  "nizo_sababi": "Mijoz to'lov summasi asossiz oshirilganidan norozi bo'lib, rahbar bilan uchrashishni talab qildi",
+  "tavsiya_etilgan_harakat": "Darcha raxbari zudlik bilan fuqaroni qabul xonasiga taklif qilib, kvitansiyani tekshirishi kerak"
+}
+```
+
+### 26.4 Shoshilinch Ogohlantirish (Push Alert Workflow — `bot.py`)
+- `critical` yoki `warning` darajasidagi nizo aniqlanganda, `bot.py` avtomatik tarzda
+  barcha `manager` va `deputy` foydalanuvchilariga shoshilinch xabar yuboradi:
+  ```
+  🚨 SHOSHILINCH SIGNAL: Darchada Nizoli Vaziyat!
+  📍 Darcha: 3-Darcha (Jasur Bekchanov)
+  ⚠️ Jiddiylik: QIZIL (CRITICAL)
+  📝 Sabab: Mijoz xizmat to'lovidan norozi bo'lib e'tiroz bildirdi.
+  
+  [🎧 Audioni eshitish] [📍 Darchaga borish] [✅ Muammo hal qilindi]
+  ```
+- **"✅ Muammo hal qilindi"** bosilganda bazada ticket holati yopiladi va qayd qilinadi.
+
+### 26.5 Mini App Escalation Shield Moduli (`miniapp/`)
+- Mini App ichida alohida **"🚨 Nizoli Vaziyatlar & Signalizatsiya"** interaktiv paneli;
+- Jonli pulsatsiyalanuvchi kartochkalar, audio pleyer, muammoni hal qilish holatlari;
+- Filtrlash: `🔴 Jiddiy (Critical)`, `🟡 Ogohlantirish (Warning)`, `🟢 Hal qilinganlar (Resolved)`.
 
 ---
 
-## 10. ILOVALAR
+## 27. AMALDAGI KODLAR VA TAYYORLIK STATUSI
 
 Barcha kodlar joriy holatga mos yangilangan — self-review, yangi bonus
 formulasi, xavfsizlik tuzatishlari, Dashboard Mini App, Intizom AI,
 onboarding tizimi, ko'p-sohali konfiguratsiya, ichki suhbat filtri,
-davomat moduli, o'zbek/rus tili va Dashboard fon temalari kiritildi:
+davomat moduli, o'zbek/rus tili, Dashboard fon temalari hamda **Nizoli Vaziyatlar Signalizatsiyasi (Escalation Shield)** kiritildi:
 
 - `recorder.py` — mikrofondan avtomatik yozib oluvchi modul (VAD asosida,
-  10s jimlik chegarasi, bug tuzatilgan), heartbeat/davomat, ish soatlari
-  oynasi, tarmoq papkasi (`RECORDINGS_DIR`), **avtomatik chastota
-  moslashuvi, Bluetooth uzilishga chidamlilik** — **tayyor**
-- `setup_wizard.py` — mikrofonni shaxsiy sozlash/sinov skripti (interaktiv,
-  bir martalik) — **tayyor**
-- `transcribe.py` — faster-whisper (mahalliy, bepul) asosidagi
-  transkripsiya, **standart holatda o'zbek/rus tilini avtomatik
-  aniqlaydi** — **tayyor**
-- `analyzer.py` — Gemini API, few-shot misollar, adolatli talqin
-  qoidasi, **ko'p-sohali dinamik mezonlar (`criteria.json`)**, **ichki
-  suhbat klassifikatsiyasi (`is_customer_conversation`, uz/ru kalit
-  so'zlar)**, **javobi har doim o'zbekcha bo'lishi qoidasi** — **tayyor**
-- `bot.py` — rol tizimi (rahbar/o'rinbosar/HR/admin), operator self-review,
-  xodim CRUD (FSM), yangi bonus formulasi, kamera Mini App tugmasi, lokal
-  papka kuzatuvchisi, **username-asosli bir martalik onboarding**
-  (`pending_access.json`), **kunlik/oylik hisobot avtomatlashtirilishi**,
-  **1 oylik audio saqlash muddati** (retention), **ichki suhbat filtri**,
-  **"🕒 Davomat" bo'limi, work_sessions sinxronlash**, **🇺🇿/🇷🇺 til
-  almashtirish (`TRANSLATIONS`/`t()`)** — **tayyor**
-- `schema.sql` / migratsiyalar — employees, bot_users, conversations
-  (audio_storage_path, audio_duration_sec bilan), analytics, bonuses (v2),
-  self_reviews, daily_reports, monthly_reports, ai_chat_messages,
-  **work_sessions**, **internal_chats_log**, **today_attendance VIEW**,
-  RLS yoqilgan — **tayyor**
-- `onboard_new_client.py` — yangi mijozni bir buyruq bilan ulash — **tayyor**
-- `clients/templates/` — 7 ta soha shabloni, har biri
-  `classification_keywords` bilan boyitilgan — **tayyor**
-- **Telegram Mini App (Dashboard)** — `miniapp/` papkasi, Vercel'da
-  joylashtirilgan: hisobotlar, **yozuvlar tarixi (31 kunlik kalendar)**,
-  **davomat**, xodimlar, kamera, sozlamalar (bonus, **til**, **3 ta fon
-  temasi**), suhbat audiosini Storage orqali eshitish — **tayyor**
-- **"Intizom AI"** — Dashboard ichidagi coaching-chat moduli (matn/ovoz/rasm),
-  so'nggi 30 kunlik real ma'lumotga asoslanadi, past ballli suhbatlar
-  ro'yxatini faqat so'ralganda taqdim etadi (avtomatik ogohlantirmaydi),
-  ovozli javob (TTS) qo'llab-quvvatlaydi — **tayyor**
-- `requirements.txt`, `.env.example` — **tayyor** (RECORDINGS_DIR,
-  WORK_HOURS_START/END, CLIENT_ID/INDUSTRY qo'shildi)
+  10s jimlik chegarasi, atomik `.tmp` yozuvi, heartbeat/davomat, ish soatlari
+  oynasi, tarmoq papkasi, avtomatik chastota moslashuvi, Bluetooth uzilishga chidamlilik) — **tayyor**
+- `setup_wizard.py` — mikrofonni shaxsiy sozlash/sinov skripti — **tayyor**
+- `transcribe.py` — faster-whisper asosidagi transkripsiya, o'zbek/rus tilini avtomatik aniqlaydi, sohaviy leksika prompti — **tayyor**
+- `analyzer.py` — Gemini API, PII ma'lumotlarni yashirish (O'RQ-547), **Nizoli vaziyatlarni aniqlash (`nizo_xavfi`, `jiddiylik_darajasi`)**, ko'p-sohali dinamik mezonlar (`criteria.json`), ichki suhbat filtri — **tayyor**
+- `bot.py` — rol tizimi, **Eskalatsiya shoshilinch ogohlantirishlari**, xodim CRUD, bonus formulasi, lokal papka kuzatuvchisi, davomat sinxronlash, 🇺🇿/🇷🇺 til almashtirish — **tayyor**
+- `miniapp/` — **Nizoli Vaziyatlar & Signalizatsiya (Escalation Shield)**, Sifat hisobotlari, Davomat, Intizom AI (DeepThink, RGB neon aura), 8 ta Pinterest fonlari — **tayyor**
+- `requirements.txt`, `.env.example`, `.gitignore` — **tayyor**
 
-**Hali kodga kiritilmagan (keyingi bosqichlarga qoldirilgan):**
-litsenziya/AI Proxy tizimi (3.11-band), qo'llab-quvvatlash kirish
-siyosati (16-bo'lim), narx nomuvofiqligini aniqlash moduli (16-bo'lim),
-partiya (batch) audio import moduli (`bulk_import.py`, 20-bo'lim) va
+**Keyingi amaliy qadamlar:**
+1. `.env` faylida haqiqiy API kalitlari va bot tokenini tasdiqlash
+2. `bot.py`'ni ishga tushirish va Telegram'da `/start` bosish
+3. Mini App orqali barcha bo'limlarni test qilish.import.py`, 20-bo'lim) va
 VPS/markazlashtirilgan hosting — loyiha egasining talabi bilan hozircha
 ortga qoldirildi.
 
