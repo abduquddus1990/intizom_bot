@@ -815,6 +815,8 @@ function viewAiChat() {
   };
   const activeMode = modeLabels[currentAiMode] || modeLabels.hr;
 
+  const hasUserChatted = chatMessages.some(m => m.role === "user");
+
   const html = `
     <div class="view-header" style="margin-bottom:10px;">
       <div class="view-title-box">
@@ -822,14 +824,19 @@ function viewAiChat() {
         <p>${activeMode.sub}</p>
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
+        ${hasUserChatted ? `
+          <button class="action-btn-pill" style="font-size:11px; padding:4px 9px; background:rgba(255,255,255,0.08);" onclick="resetAiChat()">
+            <span class="material-symbols-outlined" style="font-size:13px;">refresh</span> Yangi suhbat
+          </button>
+        ` : ""}
         <span class="live-pill" style="font-size:11px; background:rgba(255,255,255,0.06); border:1px solid var(--card-border);">
-          <span class="pulse-dot"></span> Bugun qolgan: <b>${aiDailyRemaining}/30</b>
+          <span class="pulse-dot"></span> Bugun: <b>${aiDailyRemaining}/30</b>
         </span>
       </div>
     </div>
 
     <!-- AI Stage (fon 2.jpg bilan 100% mos) -->
-    <div class="ai-stage-container">
+    <div class="ai-stage-container ${hasUserChatted ? 'chat-active-full' : ''}">
       
       <!-- 1. YUQORIDAGI MATN KIRITISH KAPSULASI (TOP PROMPT CAPSULE + AMBIENT AURA) -->
       <div class="ai-capsule-outer-wrap">
@@ -956,54 +963,56 @@ function viewAiChat() {
         ` : ""}
       </div>
 
-      <!-- 3. PASTKI QISM: 4 TA KO'P BERILADIGAN SAVOLLAR (FAQ SECTION) -->
-      <div class="ai-faq-bottom-section">
-        <div class="ai-faq-header">
-          <span class="material-symbols-outlined" style="font-size:15px; color:var(--primary);">quiz</span>
-          <span>Tezkor Tahlil Savollari</span>
+      <!-- 3. PASTKI QISM: Faqat suhbat boshlanmaganda ko'rinadi -->
+      ${!hasUserChatted ? `
+        <div class="ai-faq-bottom-section">
+          <div class="ai-faq-header">
+            <span class="material-symbols-outlined" style="font-size:15px; color:var(--primary);">quiz</span>
+            <span>Tezkor Tahlil Savollari</span>
+          </div>
+          <div class="ai-faq-grid">
+            <div class="ai-faq-card" onclick="sendQuickPrompt('Bugun kim eng ko\\'p xato qildi?')">
+              <div class="ai-faq-icon amber">
+                <span class="material-symbols-outlined">warning</span>
+              </div>
+              <div class="ai-faq-text-wrap">
+                <div class="ai-faq-title">1. Eng Ko'p Xatolar</div>
+                <div class="ai-faq-sub">Past ball olgan xodimlar va kamchiliklar</div>
+              </div>
+            </div>
+
+            <div class="ai-faq-card" onclick="sendQuickPrompt('Xodimni jazolashim yoki ishdan bo\\'shatishim kerakmi?')">
+              <div class="ai-faq-icon green">
+                <span class="material-symbols-outlined">gavel</span>
+              </div>
+              <div class="ai-faq-text-wrap">
+                <div class="ai-faq-title">2. Intizomiy Chora Maslahati</div>
+                <div class="ai-faq-sub">Yengil choralardan boshlash bo'yicha tavsiya</div>
+              </div>
+            </div>
+
+            <div class="ai-faq-card" onclick="sendQuickPrompt('Oylik bonus hisobotini chiqar')">
+              <div class="ai-faq-icon blue">
+                <span class="material-symbols-outlined">payments</span>
+              </div>
+              <div class="ai-faq-text-wrap">
+                <div class="ai-faq-title">3. Oylik Bonuslar Taqsimoti</div>
+                <div class="ai-faq-sub">Sifat formulasi bo'yicha hisoblangan summa</div>
+              </div>
+            </div>
+
+            <div class="ai-faq-card" onclick="sendQuickPrompt('Jamoa stress darajasi va ish muhiti qanday?')">
+              <div class="ai-faq-icon purple">
+                <span class="material-symbols-outlined">sentiment_satisfied</span>
+              </div>
+              <div class="ai-faq-text-wrap">
+                <div class="ai-faq-title">4. Jamoa Stress Radari</div>
+                <div class="ai-faq-sub">Emotsional charchoq va tanaffus ehtiyoji</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="ai-faq-grid">
-          <div class="ai-faq-card" onclick="sendQuickPrompt('Bugun kim eng ko\\'p xato qildi?')">
-            <div class="ai-faq-icon amber">
-              <span class="material-symbols-outlined">warning</span>
-            </div>
-            <div class="ai-faq-text-wrap">
-              <div class="ai-faq-title">1. Eng Ko'p Xatolar</div>
-              <div class="ai-faq-sub">Past ball olgan xodimlar va kamchiliklar</div>
-            </div>
-          </div>
-
-          <div class="ai-faq-card" onclick="sendQuickPrompt('Xodimni jazolashim yoki ishdan bo\\'shatishim kerakmi?')">
-            <div class="ai-faq-icon green">
-              <span class="material-symbols-outlined">gavel</span>
-            </div>
-            <div class="ai-faq-text-wrap">
-              <div class="ai-faq-title">2. Intizomiy Chora Maslahati</div>
-              <div class="ai-faq-sub">Yengil choralardan boshlash bo'yicha tavsiya</div>
-            </div>
-          </div>
-
-          <div class="ai-faq-card" onclick="sendQuickPrompt('Oylik bonus hisobotini chiqar')">
-            <div class="ai-faq-icon blue">
-              <span class="material-symbols-outlined">payments</span>
-            </div>
-            <div class="ai-faq-text-wrap">
-              <div class="ai-faq-title">3. Oylik Bonuslar Taqsimoti</div>
-              <div class="ai-faq-sub">Sifat formulasi bo'yicha hisoblangan summa</div>
-            </div>
-          </div>
-
-          <div class="ai-faq-card" onclick="sendQuickPrompt('Jamoa stress darajasi va ish muhiti qanday?')">
-            <div class="ai-faq-icon purple">
-              <span class="material-symbols-outlined">sentiment_satisfied</span>
-            </div>
-            <div class="ai-faq-text-wrap">
-              <div class="ai-faq-title">4. Jamoa Stress Radari</div>
-              <div class="ai-faq-sub">Emotsional charchoq va tanaffus ehtiyoji</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      ` : ""}
     </div>
   `;
   setView(html);
@@ -1013,6 +1022,19 @@ function viewAiChat() {
     const chatBox = document.getElementById("chat-box");
     if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
   }, 50);
+}
+
+function resetAiChat() {
+  chatMessages = [
+    { 
+      role: "assistant", 
+      mode: currentAiMode,
+      reasoning: "Kontekst yangilandi: 4 ta darcha audio tahlili va sifat mezonlari faol.",
+      text: "Assalomu alaykum! Men sizning shaxsiy AI Yordamchingizman. Iqtisodiy tahlil, HR maslahatlari, xodimlar motivatsiyasi va biznes boshqaruvida yordam berishga tayyorman. Savolingizni yozing yoki pastdagi tezkor tahlillarni tanlang!" 
+    },
+  ];
+  showToast("Chat tozalandi", "refresh");
+  viewAiChat();
 }
 
 function handleChatKeyDown(e) {

@@ -1191,13 +1191,19 @@ h1, h2, h3, h4, h5, h6 {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 130px);
-  max-height: 720px;
+  height: calc(100vh - 120px);
+  min-height: 520px;
   background: var(--ai-stage-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.ai-stage-container.chat-active-full .chat-messages-area {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 24px;
 }
 
 /* Fon tasviridagi chap/o'ng neon yorug'lik nurlari (Aura) */
