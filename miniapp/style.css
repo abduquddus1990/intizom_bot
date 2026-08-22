@@ -1548,49 +1548,79 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 20px rgba(217, 70, 239, 0.8);
 }
 
-/* DeepThink Tanlash Menyusi (fon 2.jpg bilan 100% bir xil) */
+/* =========================================================================
+   AI MUTAXASSISLIKNI TANLASH MENYUSI (Opaque, High-Contrast Popover)
+   ========================================================================= */
+
 .ai-mode-popover {
   position: absolute;
-  top: calc(100% + 8px);
-  left: 45px;
-  width: 240px;
-  background: #11141c;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.8);
-  border-radius: 14px;
-  padding: 6px;
+  top: calc(100% + 10px);
+  left: 8px;
+  right: 8px;
+  max-width: 360px;
+  background: #090d16 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  border-radius: 18px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  z-index: 50;
+  gap: 8px;
+  z-index: 9999 !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
 }
 
 .ai-mode-popover.hidden {
-  display: none;
+  display: none !important;
 }
 
 .ai-mode-option {
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
-  transition: background 0.15s;
-  color: #f1f5f9;
+  background: #141a29;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  color: #f8fafc;
 }
 
 .ai-mode-option:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: #1c2438;
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
 }
 
 .ai-mode-option.active {
-  background: rgba(255, 255, 255, 0.12);
+  background: #1c2438;
+  border-color: var(--primary);
+  box-shadow: 0 0 16px var(--primary-glow);
+}
+
+.ai-mode-option .material-symbols-outlined {
+  font-size: 24px;
+  flex-shrink: 0;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
 }
 
 .ai-mode-option .m-title {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 2px;
+  letter-spacing: -0.01em;
+}
+
+.ai-mode-option .m-sub {
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.35;
+  font-weight: 500;
 }
 
 /* =========================================================================

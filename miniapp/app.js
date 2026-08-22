@@ -1275,8 +1275,15 @@ function init() {
 
   document.addEventListener("click", (e) => {
     const dd = document.getElementById("profile-dropdown");
-    if (!dd.contains(e.target) && e.target.id !== "profile-btn") {
+    if (dd && !dd.contains(e.target) && e.target.id !== "profile-btn") {
       dd.classList.add("hidden");
+    }
+    const modePopover = document.getElementById("ai-mode-popover");
+    const modeBtn = document.getElementById("ai-mode-btn");
+    if (modePopover && !modePopover.classList.contains("hidden")) {
+      if (!modePopover.contains(e.target) && !modeBtn?.contains(e.target)) {
+        modePopover.classList.add("hidden");
+      }
     }
   });
 
