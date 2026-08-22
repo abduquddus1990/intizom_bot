@@ -263,6 +263,106 @@ html:root[data-bg-theme="theme-grid"] {
   --ai-tag-text: #e0f2fe;
 }
 
+/* 9. Neon Cyber (files (10).zip) */
+html:root[data-bg-theme="theme-neon"] {
+  --bg-color: #0a0a1a;
+  --bg-gradient: radial-gradient(circle at 20% 20%, #2b0a4e 0%, #0a0a1a 70%, #05050f 100%);
+  --text-main: #fdf4ff;
+  --text-muted: #e879f9;
+  --text-dim: #c084fc;
+  --card-bg: rgba(26, 10, 42, 0.88);
+  --card-border: rgba(255, 47, 208, 0.25);
+  --card-hover-border: rgba(255, 47, 208, 0.6);
+  --primary: #ff2fd0;
+  --primary-glow: rgba(255, 47, 208, 0.35);
+  --kinetic-color: rgba(255, 47, 208, 0.06);
+  --ai-glow-left: rgba(255, 47, 208, 0.4);
+  --ai-glow-right: rgba(123, 47, 255, 0.4);
+  --ai-stage-bg: #0e051a;
+  --ai-capsule-bg: rgba(22, 8, 36, 0.96);
+  --ai-capsule-border: rgba(255, 47, 208, 0.4);
+}
+
+/* 10. Mesh Gradient (files (10).zip) */
+html:root[data-bg-theme="theme-mesh"] {
+  --bg-color: #0d0d1a;
+  --bg-gradient: radial-gradient(at 20% 20%, #3a8bfd 0, transparent 50%), radial-gradient(at 80% 0%, #ff5fa2 0, transparent 50%), radial-gradient(at 0% 80%, #5ce8c5 0, transparent 50%), #0d0d1a;
+  --text-main: #ffffff;
+  --text-muted: #93c5fd;
+  --text-dim: #60a5fa;
+  --card-bg: rgba(18, 18, 36, 0.85);
+  --card-border: rgba(58, 139, 253, 0.25);
+  --card-hover-border: rgba(92, 232, 197, 0.5);
+  --primary: #3a8bfd;
+  --primary-glow: rgba(58, 139, 253, 0.3);
+  --kinetic-color: rgba(92, 232, 197, 0.05);
+  --ai-glow-left: rgba(255, 95, 162, 0.35);
+  --ai-glow-right: rgba(92, 232, 197, 0.35);
+  --ai-stage-bg: #090915;
+  --ai-capsule-bg: rgba(15, 15, 30, 0.96);
+  --ai-capsule-border: rgba(58, 139, 253, 0.4);
+}
+
+/* 11. Billur Glassmorphism (files (10).zip) */
+html:root[data-bg-theme="theme-glass"] {
+  --bg-color: #0a1220;
+  --bg-gradient: linear-gradient(160deg, #1a2a4a 0%, #0a1220 100%);
+  --text-main: #f8fafc;
+  --text-muted: #cbd5e1;
+  --text-dim: #94a3b8;
+  --card-bg: rgba(255, 255, 255, 0.08);
+  --card-border: rgba(255, 255, 255, 0.18);
+  --card-hover-border: rgba(255, 255, 255, 0.35);
+  --primary: #38bdf8;
+  --primary-glow: rgba(56, 189, 248, 0.25);
+  --kinetic-color: rgba(255, 255, 255, 0.05);
+  --ai-glow-left: rgba(56, 189, 248, 0.3);
+  --ai-glow-right: rgba(255, 255, 255, 0.25);
+  --ai-stage-bg: rgba(10, 18, 32, 0.8);
+  --ai-capsule-bg: rgba(16, 28, 48, 0.9);
+  --ai-capsule-border: rgba(255, 255, 255, 0.25);
+}
+
+/* 12. 3D Tilt Cyber (files (10).zip) */
+html:root[data-bg-theme="theme-3d"] {
+  --bg-color: #05070c;
+  --bg-gradient: linear-gradient(160deg, #10151f 0%, #05070c 100%);
+  --text-main: #f0fdf4;
+  --text-muted: #67e8f9;
+  --text-dim: #22d3ee;
+  --card-bg: rgba(16, 21, 31, 0.9);
+  --card-border: rgba(79, 172, 254, 0.2);
+  --card-hover-border: rgba(0, 242, 254, 0.5);
+  --primary: #4facfe;
+  --primary-glow: rgba(79, 172, 254, 0.35);
+  --kinetic-color: rgba(0, 242, 254, 0.05);
+  --ai-glow-left: rgba(79, 172, 254, 0.35);
+  --ai-glow-right: rgba(0, 242, 254, 0.4);
+  --ai-stage-bg: #080c14;
+  --ai-capsule-bg: rgba(13, 19, 28, 0.96);
+  --ai-capsule-border: rgba(79, 172, 254, 0.35);
+}
+
+/* 13. Aurora Shaftoli (files (10).zip) */
+html:root[data-bg-theme="theme-aurora"] {
+  --bg-color: #1a0a3a;
+  --bg-gradient: linear-gradient(-45deg, #1a0a3a, #0a2a4a, #0a3a2a, #2a0a3a);
+  --text-main: #fdf4ff;
+  --text-muted: #86efac;
+  --text-dim: #c084fc;
+  --card-bg: rgba(26, 12, 50, 0.86);
+  --card-border: rgba(123, 47, 255, 0.25);
+  --card-hover-border: rgba(47, 217, 160, 0.5);
+  --primary: #7b2fff;
+  --primary-glow: rgba(123, 47, 255, 0.3);
+  --kinetic-color: rgba(47, 217, 160, 0.05);
+  --ai-glow-left: rgba(123, 47, 255, 0.38);
+  --ai-glow-right: rgba(47, 217, 160, 0.38);
+  --ai-stage-bg: #0f0622;
+  --ai-capsule-bg: rgba(20, 10, 42, 0.96);
+  --ai-capsule-border: rgba(123, 47, 255, 0.35);
+}
+
 /* =========================================================================
    UMUMIY RESET & ASOSIY STRUKTURA
    ========================================================================= */

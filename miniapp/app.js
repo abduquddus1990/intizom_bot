@@ -31,9 +31,14 @@ let currentUser = {
   language: "uz",
 };
 
-// 8 Ta Pinterest Fon Mavzulari
+// Pinterest & 3D Fon Mavzulari (files (10).zip bilan boyitildi)
 const PINTEREST_THEMES = [
   { key: "theme-emerald", label_uz: "Zangori Zumrad", label_ru: "Изумрудный Лес", color: "#10b981" },
+  { key: "theme-neon", label_uz: "Neon Cyber", label_ru: "Неоновый Кибер", color: "#ff2fd0" },
+  { key: "theme-mesh", label_uz: "Mesh Gradient", label_ru: "Мэш Градиент", color: "#3a8bfd" },
+  { key: "theme-glass", label_uz: "Billur Glass", label_ru: "Хрустальное Стекло", color: "#38bdf8" },
+  { key: "theme-3d", label_uz: "3D Tilt Cyber", label_ru: "3D Перспектива", color: "#4facfe" },
+  { key: "theme-aurora", label_uz: "Aurora Shaftoli", label_ru: "Северное Сияние", color: "#7b2fff" },
   { key: "theme-cream", label_uz: "Wabi-Sabi Qum", label_ru: "Песочный Крем", color: "#e8d8c3" },
   { key: "theme-sage", label_uz: "Sokin Matcha", label_ru: "Матча Зеленый", color: "#a3b899" },
   { key: "theme-plum", label_uz: "Nafis Shafaq", label_ru: "Нежная Слива", color: "#8a508f" },
@@ -777,39 +782,49 @@ function viewCamera() {
 }
 
 // =========================================================================
-// 7. INTIZOM AI CHAT — Futuristic Glow Aura, Top Capsule & 4 FAQ Cards
 // =========================================================================
-let currentAiMode = "deepthink"; // 'quick', 'balanced', 'deepthink', 'research'
+// 7. INTIZOM AI CHAT — 4 Ta Rol (Iqtisodchi, HR, Psixolog, Assistent)
+// =========================================================================
+let currentAiMode = "hr"; // 'iqtisod', 'hr', 'psixolog', 'biznes'
 let currentAiTone = "normal";   // 'normal', 'formal', 'concise'
 let isAiThinking = false;
+let aiDailyRemaining = 28;
+let aiVoiceResponseOn = false;
 
 let chatMessages = [
   { 
     role: "assistant", 
-    mode: "deepthink",
-    reasoning: "Kontekst tahlil qilindi: 4 ta darcha audio yozuvlari, 5 ta sifat mezoni va davomat ma'lumotlari yuklandi.",
-    text: "Assalomu alaykum! Men Intizom AI yordamchisiman. DeepThink rejimida xodimlaringiz muloqoti, bugungi xatolar va sifat tahlilini chuqur tekshirib beraman. Yuqoridagi maydondan savolingizni bering yoki pastdagi tezkor savollarni tanlang!" 
+    mode: "hr",
+    reasoning: "Kontekst yuklandi: 4 ta darcha audio tahlili, so'nggi xatolar va xodimlar ko'rsatkichlari faol.",
+    text: "Assalomu alaykum! Men sizning shaxsiy AI Yordamchingizman. Iqtisodiy tahlil, HR maslahatlari, xodimlar motivatsiyasi va biznes boshqaruvida yordam berishga tayyorman. Savolingizni yozing yoki pastdagi tezkor tahlillarni tanlang!" 
   },
 ];
 
+function toggleAiVoiceResponse() {
+  aiVoiceResponseOn = !aiVoiceResponseOn;
+  showToast(aiVoiceResponseOn ? "🔊 AI ovozli javob berish yoqildi" : "🔇 Ovozli javob o'chirildi", "graphic_eq");
+  viewAiChat();
+}
+
 function viewAiChat() {
   const modeLabels = {
-    quick: { label: "Tezkor", icon: "bolt", color: "#fbbf24" },
-    balanced: { label: "Balansli", icon: "balance", color: "#38bdf8" },
-    deepthink: { label: "DeepThink", icon: "psychology", color: "#c084fc" },
-    research: { label: "Tadqiqot", icon: "science", color: "#10b981" }
+    iqtisod: { label: "Iqtisodiy Analitik", icon: "trending_up", color: "#38bdf8", sub: "KPI, daromad va bonuslar tahlili" },
+    hr: { label: "HR Mutaxassis", icon: "badge", color: "#10b981", sub: "Xodimlar, adolatli baho va intizomiy choralar" },
+    psixolog: { label: "Psixolog & Stress", icon: "psychology", color: "#c084fc", sub: "Stress radari, charchoq va jamoa muhiti" },
+    biznes: { label: "Biznes Assistent", icon: "business_center", color: "#fbbf24", sub: "Umumiy boshqaruv, xatlar va rejalashtirish" }
   };
-  const activeMode = modeLabels[currentAiMode] || modeLabels.deepthink;
+  const activeMode = modeLabels[currentAiMode] || modeLabels.hr;
 
   const html = `
     <div class="view-header" style="margin-bottom:10px;">
       <div class="view-title-box">
         <h2>${t("chat_title")}</h2>
-        <p>${t("chat_sub")}</p>
+        <p>${activeMode.sub}</p>
       </div>
-      <div class="live-pill">
-        <span class="pulse-dot"></span>
-        <span style="font-weight:700; color:var(--primary); font-size:12px;">DeepThink 2.5 Faol</span>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="live-pill" style="font-size:11px; background:rgba(255,255,255,0.06); border:1px solid var(--card-border);">
+          <span class="pulse-dot"></span> Bugun qolgan: <b>${aiDailyRemaining}/30</b>
+        </span>
       </div>
     </div>
 
@@ -847,7 +862,7 @@ function viewAiChat() {
 
           <div class="ai-capsule-bottom-bar">
             <div class="ai-left-controls">
-              <button class="ai-pill-btn icon-only" title="Audio yoki Fayl yuklash" onclick="showToast('Audio/Hujjat biriktirish oynasi', 'attach_file')">
+              <button class="ai-pill-btn icon-only" title="Hujjat yoki Rasm biriktirish" onclick="showToast('📎 Rasm/Audio/Hujjat biriktirildi', 'attach_file')">
                 <span class="material-symbols-outlined" style="font-size:17px;">add</span>
               </button>
               
@@ -865,9 +880,11 @@ function viewAiChat() {
             </div>
 
             <div class="ai-right-controls">
-              <button class="ai-pill-btn" onclick="toggleVoiceInput()">
-                <span class="material-symbols-outlined" style="font-size:15px; color:#38bdf8;">graphic_eq</span>
-                <span>Voice</span>
+              <button class="ai-pill-btn ${aiVoiceResponseOn ? 'active-mode' : ''}" onclick="toggleAiVoiceResponse()" title="Ovozli javob (TTS)">
+                <span class="material-symbols-outlined" style="font-size:15px; color:${aiVoiceResponseOn ? '#10b981' : '#38bdf8'};">
+                  ${aiVoiceResponseOn ? 'volume_up' : 'graphic_eq'}
+                </span>
+                <span>${aiVoiceResponseOn ? 'TTS On' : 'Voice'}</span>
               </button>
 
               <button class="ai-send-gradient-btn" id="ai-send-btn" onclick="submitChatMessage()" title="Yuborish">
@@ -876,34 +893,34 @@ function viewAiChat() {
             </div>
           </div>
 
-          <!-- DeepThink Dropdown Popover matching fon 2.jpg -->
+          <!-- 4 Ta Rol Tanlash Menyusi (ai_assistant_prompt.py bilan 100% mos) -->
           <div id="ai-mode-popover" class="ai-mode-popover hidden">
-            <div class="ai-mode-option ${currentAiMode === 'quick' ? 'active' : ''}" onclick="selectAiMode('quick')">
-              <span class="material-symbols-outlined" style="color:#fbbf24;">bolt</span>
+            <div class="ai-mode-option ${currentAiMode === 'hr' ? 'active' : ''}" onclick="selectAiMode('hr')">
+              <span class="material-symbols-outlined" style="color:#10b981;">badge</span>
               <div>
-                <div class="m-title">Quick answer</div>
-                <div class="m-sub">1-2 jumlada qisqa tezkor javob</div>
+                <div class="m-title">HR Mutaxassis</div>
+                <div class="m-sub">Xodimlar, baholash va odob mezonlari</div>
               </div>
             </div>
-            <div class="ai-mode-option ${currentAiMode === 'balanced' ? 'active' : ''}" onclick="selectAiMode('balanced')">
-              <span class="material-symbols-outlined" style="color:#38bdf8;">balance</span>
+            <div class="ai-mode-option ${currentAiMode === 'iqtisod' ? 'active' : ''}" onclick="selectAiMode('iqtisod')">
+              <span class="material-symbols-outlined" style="color:#38bdf8;">trending_up</span>
               <div>
-                <div class="m-title">Balanced</div>
-                <div class="m-sub">Standart tahlil va mezonlar</div>
+                <div class="m-title">Iqtisodiy Analitik</div>
+                <div class="m-sub">KPI, daromad va bonus xarajatlari tahlili</div>
               </div>
             </div>
-            <div class="ai-mode-option ${currentAiMode === 'deepthink' ? 'active' : ''}" onclick="selectAiMode('deepthink')">
+            <div class="ai-mode-option ${currentAiMode === 'psixolog' ? 'active' : ''}" onclick="selectAiMode('psixolog')">
               <span class="material-symbols-outlined" style="color:#c084fc;">psychology</span>
               <div>
-                <div class="m-title">DeepThink</div>
-                <div class="m-sub">Mantiqiy zanjirli chuqur tahlil</div>
+                <div class="m-title">Psixolog & Stress</div>
+                <div class="m-sub">Charchoq, asabiylik va jamoa dinamikasi</div>
               </div>
             </div>
-            <div class="ai-mode-option ${currentAiMode === 'research' ? 'active' : ''}" onclick="selectAiMode('research')">
-              <span class="material-symbols-outlined" style="color:#10b981;">science</span>
+            <div class="ai-mode-option ${currentAiMode === 'biznes' ? 'active' : ''}" onclick="selectAiMode('biznes')">
+              <span class="material-symbols-outlined" style="color:#fbbf24;">business_center</span>
               <div>
-                <div class="m-title">Research</div>
-                <div class="m-sub">Qonunchilik va xizmat reglamenti</div>
+                <div class="m-title">Biznes Assistent</div>
+                <div class="m-sub">Kundalik rejalashtirish, xatlar va xizmat</div>
               </div>
             </div>
           </div>
@@ -918,18 +935,23 @@ function viewAiChat() {
               <div class="deepthink-reasoning-box">
                 <div class="deepthink-reasoning-header">
                   <span class="material-symbols-outlined" style="font-size:16px;">psychology</span>
-                  <span>DeepThink Reasoning Jarayoni</span>
+                  <span>DeepThink Reasoning & Kontekst Tahlili</span>
                 </div>
                 <div style="white-space:pre-line;">${m.reasoning}</div>
               </div>
             ` : ""}
             <div>${m.text}</div>
+            ${m.audio_url ? `
+              <div style="margin-top:8px;">
+                <audio controls src="${m.audio_url}" style="width:100%; height:32px; border-radius:6px;"></audio>
+              </div>
+            ` : ""}
           </div>
         `).join("")}
         ${isAiThinking ? `
           <div class="chat-bubble assistant" style="display:flex; align-items:center; gap:8px; opacity:0.85;">
             <span class="material-symbols-outlined" style="font-size:18px; color:#c084fc; animation:spin 1.5s linear infinite;">psychology</span>
-            <span>Intizom AI tahlil qilmoqda (DeepThink)...</span>
+            <span>AI tahlil qilmoqda (${activeMode.label})...</span>
           </div>
         ` : ""}
       </div>
@@ -938,7 +960,7 @@ function viewAiChat() {
       <div class="ai-faq-bottom-section">
         <div class="ai-faq-header">
           <span class="material-symbols-outlined" style="font-size:15px; color:var(--primary);">quiz</span>
-          <span>Ko'p Beriladigan Savollar & Tahlillar</span>
+          <span>Tezkor Tahlil Savollari</span>
         </div>
         <div class="ai-faq-grid">
           <div class="ai-faq-card" onclick="sendQuickPrompt('Bugun kim eng ko\\'p xato qildi?')">
@@ -946,18 +968,18 @@ function viewAiChat() {
               <span class="material-symbols-outlined">warning</span>
             </div>
             <div class="ai-faq-text-wrap">
-              <div class="ai-faq-title">1. Bugungi Eng Ko'p Xatolar</div>
+              <div class="ai-faq-title">1. Eng Ko'p Xatolar</div>
               <div class="ai-faq-sub">Past ball olgan xodimlar va kamchiliklar</div>
             </div>
           </div>
 
-          <div class="ai-faq-card" onclick="sendQuickPrompt('Eng xushmuomala xodim kim?')">
+          <div class="ai-faq-card" onclick="sendQuickPrompt('Xodimni jazolashim yoki ishdan bo\\'shatishim kerakmi?')">
             <div class="ai-faq-icon green">
-              <span class="material-symbols-outlined">emoji_events</span>
+              <span class="material-symbols-outlined">gavel</span>
             </div>
             <div class="ai-faq-text-wrap">
-              <div class="ai-faq-title">2. Eng Xushmuomala Xodim</div>
-              <div class="ai-faq-sub">Eng yuqori 90+ ball to'plagan operator</div>
+              <div class="ai-faq-title">2. Intizomiy Chora Maslahati</div>
+              <div class="ai-faq-sub">Yengil choralardan boshlash bo'yicha tavsiya</div>
             </div>
           </div>
 
@@ -971,13 +993,13 @@ function viewAiChat() {
             </div>
           </div>
 
-          <div class="ai-faq-card" onclick="sendQuickPrompt('3-darcha bo\\'yicha tavsiya ber')">
+          <div class="ai-faq-card" onclick="sendQuickPrompt('Jamoa stress darajasi va ish muhiti qanday?')">
             <div class="ai-faq-icon purple">
-              <span class="material-symbols-outlined">lightbulb</span>
+              <span class="material-symbols-outlined">sentiment_satisfied</span>
             </div>
             <div class="ai-faq-text-wrap">
-              <div class="ai-faq-title">4. 3-Darcha Amaliy Tavsiya</div>
-              <div class="ai-faq-sub">Muloqotni yaxshilash bo'yicha yechim</div>
+              <div class="ai-faq-title">4. Jamoa Stress Radari</div>
+              <div class="ai-faq-sub">Emotsional charchoq va tanaffus ehtiyoji</div>
             </div>
           </div>
         </div>
@@ -1010,7 +1032,7 @@ function selectAiMode(mode) {
   currentAiMode = mode;
   const popover = document.getElementById("ai-mode-popover");
   if (popover) popover.classList.add("hidden");
-  showToast(`Rejim almashtirildi: ${mode.toUpperCase()}`, "psychology");
+  showToast(`Rejim tanlandi: ${mode.toUpperCase()}`, "psychology");
   viewAiChat();
 }
 
@@ -1041,32 +1063,41 @@ function sendQuickPrompt(prompt) {
 
 function sendUserMessage(text) {
   chatMessages.push({ role: "user", text });
+  if (aiDailyRemaining > 0) aiDailyRemaining--;
   isAiThinking = true;
   viewAiChat();
 
-  // O'ylash paytida ramkani RGB aylanuvchi rejimga o'tkazish
   setTimeout(() => {
     let reply = "Xodimlaringiz tahlili bo'yicha ma'lumot tayyorlandi.";
-    let reasoning = null;
+    let reasoning = `1. ${currentAiMode.toUpperCase()} rejimida tahlil olib borildi.\n2. So'nggi xodimlar audio statistikasi va mezonlar zanjiri ko'rib chiqildi.\n3. Xulosa va tavsiyalar shakllantirildi.`;
 
-    if (currentAiMode === "deepthink") {
-      reasoning = `1. Audio arxiv tekshirildi: «${text}» bo'yicha so'rov identifikatsiya qilindi.\n2. Mezonlar taqqoslandi: Odob-axloq (4.2-band), Davlat xizmati reglamenti va audio spektr tahlil qilindi.\n3. Xulosa shakllantirildi: Konkret darcha xodimi va sabablari ko'rsatildi.`;
-    }
+    const lower = text.toLowerCase();
 
-    if (text.includes("xato")) {
-      reply = "Bugun eng ko'p xatoga 3-darcha xodimi Jasur Bekchanov yo'l qo'ydi (48 ball). Asosiy sabab: salomlashmadi va mijoz gapini bo'ldi.";
-    } else if (text.includes("yaxshi") || text.includes("xushmuomala")) {
-      reply = "Bugungi eng xushmuomala xodim — 4-darcha operatori Nigora Umarova (96 ball). Barcha 5 ta mezon bo'yicha a'lo baholandi.";
-    } else if (text.includes("bonus")) {
-      reply = "Joriy oy uchun bonus hisobi: Nigora Umarova (500,000 so'm, 100%), Dilnoza Karimova (420,000 so'm, 93%).";
-    } else if (text.includes("3-darcha") || text.includes("tavsiya")) {
-      reply = "3-darcha (Jasur Bekchanov) uchun tavsiya: Mijoz so'zini oxirigacha eshitish (kamida 3 soniya pauza) va xizmat yakunida minnatdorlik bildirish bo'yicha qisqa trening o'tkazish tavsiya etiladi.";
+    // INTIZOMIY CHORALAR BO'YICHA QAT'IY HR STANDARTI (ai_assistant_prompt.py)
+    if (lower.includes("jazo") || lower.includes("bo'shat") || lower.includes("jarima") || lower.includes("chora")) {
+      reply = "Bu vaziyatda darhol eng qattiq chorani (jarima yoki ishdan bo'shatish) qo'llashdan oldin, vaziyat sabablarini o'rganishni tavsiya qilaman.\n\n" +
+              "📌 **Tavsiya etiladigan bosqichma-bosqich yondashuv:**\n" +
+              "1. **Og'zaki suhbat:** Xodim bilan xolis, yakkama-yakka suhbat o'tkazib, kamchilik sababini aniqlang;\n" +
+              "2. **Yozma ogohlantirish:** Agar holat ikkinchi marta takrorlansa, rasmiy yozma ogohlantirish bering;\n" +
+              "3. **Hayfsan / Qattiq chora:** Faqat tizimli va takroriy qonunbuzarlik bo'lsagina jiddiy intizomiy chora qo'llang.\n\n" +
+              "Bu yondashuv jamoani saqlab qolish va adolatli ish muhitini ta'minlash uchun xavfsizroqdir.";
+    } else if (lower.includes("xato")) {
+      reply = "Bugun eng ko'p kamchilik 3-darcha xodimi Jasur Bekchanovda qayd etildi (48 ball). Asosiy sabab: salomlashish tartibiga rioya qilmadi va mijoz gapini bo'ldi.";
+    } else if (lower.includes("stress") || lower.includes("muhit") || lower.includes("charchoq")) {
+      reply = "Jamoa umumiy stress darajasi: 18% (Qoniqarli). 1-darcha xodimi Dilnoza Karimova bugun 35 ta mijoz bilan suhbatlashgani sababli unga 15 daqiqalik tanaffus berish maqsadga muvofiq.";
+    } else if (lower.includes("bonus")) {
+      reply = "Joriy oy uchun hisoblangan bonuslar: Nigora Umarova (500,000 so'm, 100%), Dilnoza Karimova (420,000 so'm, 93%), Alisher Rustamov (280,000 so'm, 73%).";
     } else {
-      reply = `«${text}» bo'yicha suhbatlar bazasidan ma'lumot olindi. Xodimlar intizomi umumiy 88.4% darajasida barqaror.`;
+      reply = `«${text}» bo'yicha bazadan ma'lumot olindi. Xizmat ko'rsatish sifati 88.4% darajasida barqaror rivojlanmoqda.`;
     }
 
     isAiThinking = false;
-    chatMessages.push({ role: "assistant", reasoning, text: reply });
+    chatMessages.push({ 
+      role: "assistant", 
+      reasoning, 
+      text: reply,
+      audio_url: aiVoiceResponseOn ? "https://actions.google.com/sounds/v1/ambiences/office_room.ogg" : null
+    });
     viewAiChat();
   }, 1200);
 }

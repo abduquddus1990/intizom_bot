@@ -121,10 +121,10 @@ ROLE_HR = "hr"
 ROLE_ADMIN = "admin"
 
 ROLE_PERMISSIONS = {
-    ROLE_MANAGER: {"reports", "employees", "bonuses", "camera", "settings", "attendance"},
+    ROLE_MANAGER: {"reports", "employees", "bonuses", "camera", "settings", "attendance", "ai_assistant"},
     ROLE_DEPUTY: {"reports", "employees", "camera", "attendance"},
     ROLE_HR: {"employees", "attendance"},
-    ROLE_ADMIN: {"reports", "employees", "bonuses", "camera", "settings", "attendance"},
+    ROLE_ADMIN: {"reports", "employees", "bonuses", "camera", "settings", "attendance", "ai_assistant"},
 }
 
 # XAVFSIZLIK TUZATISHI (TZ 11-bo'lim, C-band): HR "employees" huquqiga ega
@@ -309,6 +309,11 @@ def build_main_menu(role: str, lang: str = "uz") -> InlineKeyboardMarkup:
                 text="🌐 Dashboard",
                 web_app=WebAppInfo(url=DASHBOARD_WEBAPP_URL),
             )])
+            if has_permission(role, "ai_assistant"):
+                buttons.append([InlineKeyboardButton(
+                    text="🤖 AI Yordamchi (DeepThink)",
+                    web_app=WebAppInfo(url=f"{DASHBOARD_WEBAPP_URL}#ai_chat"),
+                )])
     if has_permission(role, "attendance"):
         buttons.append([InlineKeyboardButton(text=t("menu_attendance", lang), callback_data="menu_attendance")])
     if has_permission(role, "employees"):
