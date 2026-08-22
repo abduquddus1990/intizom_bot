@@ -940,7 +940,7 @@ function viewAiChat() {
                 <div style="white-space:pre-line;">${m.reasoning}</div>
               </div>
             ` : ""}
-            <div>${m.text}</div>
+            <div class="chat-text-content" style="white-space:pre-line; line-height:1.6; font-size:13.5px;">${formatAiMessageText(m.text)}</div>
             ${m.audio_url ? `
               <div style="margin-top:8px;">
                 <audio controls src="${m.audio_url}" style="width:100%; height:32px; border-radius:6px;"></audio>
@@ -1057,6 +1057,11 @@ function submitChatMessage() {
   input.value = "";
 }
 
+function formatAiMessageText(text) {
+  if (!text) return "";
+  return text.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+}
+
 function sendQuickPrompt(prompt) {
   sendUserMessage(prompt);
 }
@@ -1073,13 +1078,13 @@ function sendUserMessage(text) {
 
     const lower = text.toLowerCase();
 
-    // INTIZOMIY CHORALAR BO'YICHA QAT'IY HR STANDARTI (ai_assistant_prompt.py)
+    // INTIZOMIY CHORALAR BO'YICHA SAMIMIY VA BOSQICHMA-BOSQICH HR STANDARTI
     if (lower.includes("jazo") || lower.includes("bo'shat") || lower.includes("jarima") || lower.includes("chora")) {
       reply = "Bu vaziyatda darhol eng qattiq chorani (jarima yoki ishdan bo'shatish) qo'llashdan oldin, vaziyat sabablarini o'rganishni tavsiya qilaman.\n\n" +
-              "📌 **Tavsiya etiladigan bosqichma-bosqich yondashuv:**\n" +
-              "1. **Og'zaki suhbat:** Xodim bilan xolis, yakkama-yakka suhbat o'tkazib, kamchilik sababini aniqlang;\n" +
-              "2. **Yozma ogohlantirish:** Agar holat ikkinchi marta takrorlansa, rasmiy yozma ogohlantirish bering;\n" +
-              "3. **Hayfsan / Qattiq chora:** Faqat tizimli va takroriy qonunbuzarlik bo'lsagina jiddiy intizomiy chora qo'llang.\n\n" +
+              "📌 <b>Tavsiya etiladigan bosqichma-bosqich yondashuv:</b>\n\n" +
+              "1. <b>Og'zaki suhbat:</b> Xodim bilan xolis, yakkama-yakka suhbat o'tkazib, kamchilik sababini aniqlang.\n" +
+              "2. <b>Yozma ogohlantirish:</b> Agar holat ikkinchi marta takrorlansa, rasmiy yozma ogohlantirish bering;\n" +
+              "3. <b>Hayfsan / Qattiq chora:</b> Faqat tizimli va takroriy qonunbuzarlik bo'lsagina jiddiy intizomiy chora qo'llang.\n\n" +
               "Bu yondashuv jamoani saqlab qolish va adolatli ish muhitini ta'minlash uchun xavfsizroqdir.";
     } else if (lower.includes("xato")) {
       reply = "Bugun eng ko'p kamchilik 3-darcha xodimi Jasur Bekchanovda qayd etildi (48 ball). Asosiy sabab: salomlashish tartibiga rioya qilmadi va mijoz gapini bo'ldi.";
