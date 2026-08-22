@@ -807,21 +807,13 @@ function toggleAiVoiceResponse() {
 }
 
 function viewAiChat() {
-  const modeLabels = {
-    iqtisod: { label: "Iqtisodiy Analitik", icon: "trending_up", color: "#38bdf8", sub: "KPI, daromad va bonuslar tahlili" },
-    hr: { label: "HR Mutaxassis", icon: "badge", color: "#10b981", sub: "Xodimlar, adolatli baho va intizomiy choralar" },
-    psixolog: { label: "Psixolog & Stress", icon: "psychology", color: "#c084fc", sub: "Stress radari, charchoq va jamoa muhiti" },
-    biznes: { label: "Biznes Assistent", icon: "business_center", color: "#fbbf24", sub: "Umumiy boshqaruv, xatlar va rejalashtirish" }
-  };
-  const activeMode = modeLabels[currentAiMode] || modeLabels.hr;
-
   const hasUserChatted = chatMessages.some(m => m.role === "user");
 
   const html = `
     <div class="view-header" style="margin-bottom:10px;">
       <div class="view-title-box">
         <h2>${t("chat_title")}</h2>
-        <p>${activeMode.sub}</p>
+        <p>HR, Biznes Strategiya, Moliya va Psixologik Tahlil (All-in-One)</p>
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
         ${hasUserChatted ? `
@@ -879,11 +871,10 @@ function viewAiChat() {
                 <span class="material-symbols-outlined" style="font-size:13px;">expand_more</span>
               </button>
 
-              <button class="ai-pill-btn active-mode" id="ai-mode-btn" onclick="toggleModePopover(event)">
-                <span class="material-symbols-outlined" style="font-size:15px; color:${activeMode.color};">${activeMode.icon}</span>
-                <span>${activeMode.label}</span>
-                <span class="material-symbols-outlined" style="font-size:13px;">expand_less</span>
-              </button>
+              <div class="ai-pill-btn active-mode" style="background:rgba(192,132,252,0.15); border-color:rgba(192,132,252,0.35); color:#ffffff; cursor:default;">
+                <span class="material-symbols-outlined" style="font-size:15px; color:#c084fc;">psychology</span>
+                <span>Universal AI Maslahatchi</span>
+              </div>
             </div>
 
             <div class="ai-right-controls">
@@ -899,38 +890,6 @@ function viewAiChat() {
               </button>
             </div>
           </div>
-
-          <!-- 4 Ta Rol Tanlash Menyusi (ai_assistant_prompt.py bilan 100% mos) -->
-          <div id="ai-mode-popover" class="ai-mode-popover hidden">
-            <div class="ai-mode-option ${currentAiMode === 'hr' ? 'active' : ''}" onclick="selectAiMode('hr')">
-              <span class="material-symbols-outlined" style="color:#10b981;">badge</span>
-              <div>
-                <div class="m-title">HR Mutaxassis</div>
-                <div class="m-sub">Xodimlar, baholash va odob mezonlari</div>
-              </div>
-            </div>
-            <div class="ai-mode-option ${currentAiMode === 'iqtisod' ? 'active' : ''}" onclick="selectAiMode('iqtisod')">
-              <span class="material-symbols-outlined" style="color:#38bdf8;">trending_up</span>
-              <div>
-                <div class="m-title">Iqtisodiy Analitik</div>
-                <div class="m-sub">KPI, daromad va bonus xarajatlari tahlili</div>
-              </div>
-            </div>
-            <div class="ai-mode-option ${currentAiMode === 'psixolog' ? 'active' : ''}" onclick="selectAiMode('psixolog')">
-              <span class="material-symbols-outlined" style="color:#c084fc;">psychology</span>
-              <div>
-                <div class="m-title">Psixolog & Stress</div>
-                <div class="m-sub">Charchoq, asabiylik va jamoa dinamikasi</div>
-              </div>
-            </div>
-            <div class="ai-mode-option ${currentAiMode === 'biznes' ? 'active' : ''}" onclick="selectAiMode('biznes')">
-              <span class="material-symbols-outlined" style="color:#fbbf24;">business_center</span>
-              <div>
-                <div class="m-title">Biznes Assistent</div>
-                <div class="m-sub">Kundalik rejalashtirish, xatlar va xizmat</div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -942,7 +901,7 @@ function viewAiChat() {
               <div class="deepthink-reasoning-box">
                 <div class="deepthink-reasoning-header">
                   <span class="material-symbols-outlined" style="font-size:16px;">psychology</span>
-                  <span>DeepThink Reasoning & Kontekst Tahlili</span>
+                  <span>DeepThink Reasoning & Tahlil Zanjiri</span>
                 </div>
                 <div style="white-space:pre-line;">${m.reasoning}</div>
               </div>
@@ -958,7 +917,7 @@ function viewAiChat() {
         ${isAiThinking ? `
           <div class="chat-bubble assistant" style="display:flex; align-items:center; gap:8px; opacity:0.85;">
             <span class="material-symbols-outlined" style="font-size:18px; color:#c084fc; animation:spin 1.5s linear infinite;">psychology</span>
-            <span>AI tahlil qilmoqda (${activeMode.label})...</span>
+            <span>Universal AI tahlil qilmoqda (DeepThink 2.5)...</span>
           </div>
         ` : ""}
       </div>
@@ -971,13 +930,13 @@ function viewAiChat() {
             <span>Tezkor Tahlil Savollari</span>
           </div>
           <div class="ai-faq-grid">
-            <div class="ai-faq-card" onclick="sendQuickPrompt('Bugun kim eng ko\\'p xato qildi?')">
-              <div class="ai-faq-icon amber">
-                <span class="material-symbols-outlined">warning</span>
+            <div class="ai-faq-card" onclick="sendQuickPrompt('Mening faoliyatim dizaynerlik xizmati. Mijozlarni ko\\'paytirish va muomalani nazorat qilish bo\\'yicha maslahat ber')">
+              <div class="ai-faq-icon blue">
+                <span class="material-symbols-outlined">brush</span>
               </div>
               <div class="ai-faq-text-wrap">
-                <div class="ai-faq-title">1. Eng Ko'p Xatolar</div>
-                <div class="ai-faq-sub">Past ball olgan xodimlar va kamchiliklar</div>
+                <div class="ai-faq-title">1. Dizayn Xizmati & Mijozlar</div>
+                <div class="ai-faq-sub">Sotuvni oshirish va muomala nazorati</div>
               </div>
             </div>
 
@@ -991,13 +950,13 @@ function viewAiChat() {
               </div>
             </div>
 
-            <div class="ai-faq-card" onclick="sendQuickPrompt('Oylik bonus hisobotini chiqar')">
-              <div class="ai-faq-icon blue">
-                <span class="material-symbols-outlined">payments</span>
+            <div class="ai-faq-card" onclick="sendQuickPrompt('Bugun kim eng ko\\'p xato qildi?')">
+              <div class="ai-faq-icon amber">
+                <span class="material-symbols-outlined">warning</span>
               </div>
               <div class="ai-faq-text-wrap">
-                <div class="ai-faq-title">3. Oylik Bonuslar Taqsimoti</div>
-                <div class="ai-faq-sub">Sifat formulasi bo'yicha hisoblangan summa</div>
+                <div class="ai-faq-title">3. Eng Ko'p Xatolar</div>
+                <div class="ai-faq-sub">Past ball olgan xodimlar va kamchiliklar</div>
               </div>
             </div>
 
@@ -1028,9 +987,8 @@ function resetAiChat() {
   chatMessages = [
     { 
       role: "assistant", 
-      mode: currentAiMode,
-      reasoning: "Kontekst yangilandi: 4 ta darcha audio tahlili va sifat mezonlari faol.",
-      text: "Assalomu alaykum! Men sizning shaxsiy AI Yordamchingizman. Iqtisodiy tahlil, HR maslahatlari, xodimlar motivatsiyasi va biznes boshqaruvida yordam berishga tayyorman. Savolingizni yozing yoki pastdagi tezkor tahlillarni tanlang!" 
+      reasoning: "Universal AI Maslahatchi tizimi ishga tushirildi. Biznes strategiya, HR boshqaruv, moliya va psixologik tahlil modullari tayyor.",
+      text: "Assalomu alaykum! Men sizning Universal AI Maslahatchingizman. Biznesingizni rivojlantirish, mijozlar oqimini oshirish, xodimlar muomalasini nazorat qilish va moliyaviy KPI masalalarida yordam berishga tayyorman. Savolingizni yozing!" 
     },
   ];
   showToast("Chat tozalandi", "refresh");
@@ -1042,20 +1000,6 @@ function handleChatKeyDown(e) {
     e.preventDefault();
     submitChatMessage();
   }
-}
-
-function toggleModePopover(e) {
-  if (e) e.stopPropagation();
-  const popover = document.getElementById("ai-mode-popover");
-  if (popover) popover.classList.toggle("hidden");
-}
-
-function selectAiMode(mode) {
-  currentAiMode = mode;
-  const popover = document.getElementById("ai-mode-popover");
-  if (popover) popover.classList.add("hidden");
-  showToast(`Rejim tanlandi: ${mode.toUpperCase()}`, "psychology");
-  viewAiChat();
 }
 
 function toggleToneMenu() {
@@ -1095,27 +1039,79 @@ function sendUserMessage(text) {
   viewAiChat();
 
   setTimeout(() => {
-    let reply = "Xodimlaringiz tahlili bo'yicha ma'lumot tayyorlandi.";
-    let reasoning = `1. ${currentAiMode.toUpperCase()} rejimida tahlil olib borildi.\n2. So'nggi xodimlar audio statistikasi va mezonlar zanjiri ko'rib chiqildi.\n3. Xulosa va tavsiyalar shakllantirildi.`;
-
+    let reply = "";
+    let reasoning = "";
     const lower = text.toLowerCase();
 
-    // INTIZOMIY CHORALAR BO'YICHA SAMIMIY VA BOSQICHMA-BOSQICH HR STANDARTI
-    if (lower.includes("jazo") || lower.includes("bo'shat") || lower.includes("jarima") || lower.includes("chora")) {
+    // 1. DIZAYN XIZMATI VA MIJOZLAR OQIMI / MUOMALA NAZORATI
+    if (lower.includes("dizayn") || (lower.includes("mijoz") && (lower.includes("kopay") || lower.includes("oshir") || lower.includes("jalb")))) {
+      reasoning = `1. Biznes tahlili: Dizayn xizmatlari bozorida mijozlarni jalb qilish va saqlash modellari o'rganildi.\n2. HR & Muloqot standarti: Dizayner/menejer va buyurtmachi o'rtasidagi sifat mezonlari (5 ta sifat omili) tekshirildi.\n3. Amaliy, 2 qismli kompleks strategiya shakllantirildi.`;
+      
+      reply = "Dizayn xizmatlari sohasida mijozlarni ko'paytirish va xodimlar muomalasini nazorat qilish bo'yicha amaliy kompleks tavsiyalar:\n\n" +
+              "🎨 <b>1. Mijozlar Oqimini Ko'paytirish (Marketing & Savdo):</b>\n" +
+              "• <b>Keyslar (Case-Study) Portfolio:</b> Shunchaki rasm emas, balki «Mijoz muammosi ➔ Dizayn yechimi ➔ Erishilgan natija (savdo oshishi)» formatida portfolio taqdim eting;\n" +
+              "• <b>Ijtimoiy tarmoqlar (Instagram / Telegram / Behance):</b> «Oldin va Keyin» (Before/After) taqqoslashlari va dizayn jarayoni (backstage) videolarini muntazam ulashing;\n" +
+              "• <b>5 Daqiqalik Bepul Audit:</b> Yangi murojaat qilgan mijoz brendiga dastlabki bepul ekspress maslahat bering — bu darhol ishonch uyg'otadi;\n" +
+              "• <b>Tavsiya (Referral) Dasturi:</b> Mamnun mijoz yangi buyurtmachi olib kelsa, keyingi xizmat uchun 10-15% chegirma yoki bonus taqdim eting.\n\n" +
+              "👥 <b>2. Xodimlar Muomalasini Nazorat Qilish (HR & Sifat):</b>\n" +
+              "• <b>Muloqot Standartlari (Skriptlar):</b> Salomlashish, texnik topshiriq (TZ)ni diqqat bilan eshitish va muddatlarni aniq kelishish qoidasini o'rnating;\n" +
+              "• <b>Tezkor Javob Qoidasi (SLA):</b> Mijoz murojaat qilganda 10-15 daqiqa ichida xushmuomala javob qaytarilishini yo'lga qo'ying;\n" +
+              "• <b>5 Ta Sifat Mezoni:</b> Salomlashish, tinglash madaniyati, professional tushuntirish, xushmuomalalik va minnatdorlik bilan xayrlashish;\n" +
+              "• <b>Sifat Bonusi:</b> Mijozlardan a'lo baho va ijobiy fikr (otzyv) olgan xodimlarga oylik qo'shimcha bonus bering.\n\n" +
+              "💡 <b>Xulosa:</b> Sifatli dizayn + samimiy va tezkor muloqot xizmat narxini oshirishga va doimiy sodiq mijozlar oqimini ta'minlashga yordam beradi.";
+
+    // 2. INTIZOMIY CHORALAR BO'YICHA SAMIMIY VA BOSQICHMA-BOSQICH HR STANDARTI
+    } else if (lower.includes("jazo") || lower.includes("bo'shat") || lower.includes("jarima") || lower.includes("chora")) {
+      reasoning = `1. Mehnat munosabatlari va HR psixologiyasi tahlil qilindi.\n2. Bosqichma-bosqich intizomiy choralar ketma-ketligi belgilandi.`;
+      
       reply = "Bu vaziyatda darhol eng qattiq chorani (jarima yoki ishdan bo'shatish) qo'llashdan oldin, vaziyat sabablarini o'rganishni tavsiya qilaman.\n\n" +
               "📌 <b>Tavsiya etiladigan bosqichma-bosqich yondashuv:</b>\n\n" +
               "1. <b>Og'zaki suhbat:</b> Xodim bilan xolis, yakkama-yakka suhbat o'tkazib, kamchilik sababini aniqlang.\n" +
               "2. <b>Yozma ogohlantirish:</b> Agar holat ikkinchi marta takrorlansa, rasmiy yozma ogohlantirish bering;\n" +
               "3. <b>Hayfsan / Qattiq chora:</b> Faqat tizimli va takroriy qonunbuzarlik bo'lsagina jiddiy intizomiy chora qo'llang.\n\n" +
               "Bu yondashuv jamoani saqlab qolish va adolatli ish muhitini ta'minlash uchun xavfsizroqdir.";
-    } else if (lower.includes("xato")) {
-      reply = "Bugun eng ko'p kamchilik 3-darcha xodimi Jasur Bekchanovda qayd etildi (48 ball). Asosiy sabab: salomlashish tartibiga rioya qilmadi va mijoz gapini bo'ldi.";
+
+    // 3. BUGUNGI XATOLAR TAHLILI
+    } else if (lower.includes("xato") || lower.includes("kamchilik")) {
+      reasoning = `1. 4 ta darcha audio yozuvlari va muloqot transkriptlari tekshirildi.\n2. Salomlashish va mijoz gapini bo'lish holatlari filtrlandi.`;
+      
+      reply = "Bugungi tahlil bo'yicha eng ko'p kamchilik 3-darcha xodimi Jasur Bekchanovda qayd etildi (48 ball).\n\n" +
+              "⚠️ <b>Aniqlangan asosiy sabablar:</b>\n" +
+              "• Salomlashish tartibiga rioya qilmadi;\n" +
+              "• Mijoz so'zini oxirigacha eshitmasdan gapini bo'ldi;\n" +
+              "• Xizmat yakunida minnatdorlik bildirmadi.\n\n" +
+              "💡 <b>Tavsiya:</b> Xodim bilan 10 daqiqalik yakkama-yakka suhbat o'tkazib, mijoz so'zidan keyin 3 soniya pauza saqlash qoidasini eslatish lozim.";
+
+    // 4. STRESS VA JAMOA MUHITI
     } else if (lower.includes("stress") || lower.includes("muhit") || lower.includes("charchoq")) {
-      reply = "Jamoa umumiy stress darajasi: 18% (Qoniqarli). 1-darcha xodimi Dilnoza Karimova bugun 35 ta mijoz bilan suhbatlashgani sababli unga 15 daqiqalik tanaffus berish maqsadga muvofiq.";
-    } else if (lower.includes("bonus")) {
-      reply = "Joriy oy uchun hisoblangan bonuslar: Nigora Umarova (500,000 so'm, 100%), Dilnoza Karimova (420,000 so'm, 93%), Alisher Rustamov (280,000 so'm, 73%).";
+      reasoning = `1. Xodimlar audio balandligi, intonatsiya va suhbatlar soni tahlil qilindi.\n2. Emotsional charchoq ko'rsatkichi hisoblandi.`;
+      
+      reply = "Jamoaning umumiy stress darajasi: <b>18% (Barqaror & Qoniqarli)</b>.\n\n" +
+              "📊 <b>Xodimlar bo'yicha holat:</b>\n" +
+              "• 1-darcha (Dilnoza Karimova): Bugun 35 ta mijoz qabul qildi, biroz emotsional charchoq sezilmoqda. Unga 15 daqiqalik tanaffus tavsiya etiladi;\n" +
+              "• 4-darcha (Nigora Umarova): A'lo darajada emotsional barqarorlik (96 ball);\n" +
+              "• 3-darcha (Jasur Bekchanov): Asabiylik darajasi 32% (og'ir mijozlar bilan muloqotdan so'ng).";
+
+    // 5. BONUSLAR VA MOLIYAVIY KPI
+    } else if (lower.includes("bonus") || lower.includes("kpi") || lower.includes("maosh") || lower.includes("daromad")) {
+      reasoning = `1. Sifat formulasi (5 ta mezon) va suhbatlar soni normasi taqqoslandi.\n2. Oylik bonuslar taqsimoti hisoblab chiqildi.`;
+      
+      reply = "Joriy oy uchun xodimlarning hisoblangan bonuslar taqsimoti:\n\n" +
+              "💰 <b>Xodimlar ko'rsatkichlari:</b>\n" +
+              "1. <b>Nigora Umarova (4-darcha):</b> 500,000 so'm (100% bonus, o'rtacha 96 ball);\n" +
+              "2. <b>Dilnoza Karimova (1-darcha):</b> 420,000 so'm (93% bonus, o'rtacha 89 ball);\n" +
+              "3. <b>Alisher Rustamov (2-darcha):</b> 280,000 so'm (73% bonus, o'rtacha 78 ball);\n" +
+              "4. <b>Jasur Bekchanov (3-darcha):</b> Bonus hisoblanmadi (ball 65 dan past).";
+
+    // 6. UMUMIY BIZNES VA BOSHQARUV SAVOLLARI
     } else {
-      reply = `«${text}» bo'yicha bazadan ma'lumot olindi. Xizmat ko'rsatish sifati 88.4% darajasida barqaror rivojlanmoqda.`;
+      reasoning = `1. «${text}» so'rovi bo'yicha biznes, HR va tahliliy mezonlar kompleks ko'rib chiqildi.\n2. Universal AI ekspert xulosasi shakllantirildi.`;
+      
+      reply = `«${text}» bo'yicha tizimli tavsiyalar:\n\n` +
+              `📌 <b>1. Boshqaruv & Strategiya:</b> Jarayonlarni aniq reglamentlash va xodimlar o'rtasida mas'uliyatni to'g'ri taqsimlash samaradorlikni 25-30% ga oshiradi.\n` +
+              `📌 <b>2. Sifat Nazorati:</b> Doimiy mijozlar muloqotini kuzatib borish va haftalik qisqa brifinglar o'tkazish xatolarni 2 barobar kamaytiradi.\n` +
+              `📌 <b>3. Moliyaviy Natija:</b> Xodimlarni aniq KPI va sifat ko'rsatkichlariga bog'lash daromadning barqaror o'sishiga zamin yaratadi.\n\n` +
+              `Agar biror yo'nalish bo'yicha batafsilroq reja kerak bo'lsa, aniqroq savol berishingiz mumkin!`;
     }
 
     isAiThinking = false;
