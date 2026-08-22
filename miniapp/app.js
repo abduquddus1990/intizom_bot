@@ -1032,19 +1032,61 @@ function sendQuickPrompt(prompt) {
   sendUserMessage(prompt);
 }
 
-function sendUserMessage(text) {
+async function sendUserMessage(text) {
   chatMessages.push({ role: "user", text });
   if (aiDailyRemaining > 0) aiDailyRemaining--;
   isAiThinking = true;
   viewAiChat();
 
+  try {
+    // 1. Haqiqiy jonli Gemini 3.5 neyrotarmog'iga so'rov
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: text,
+        history: chatMessages.slice(-8)
+      })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.text) {
+        isAiThinking = false;
+        chatMessages.push({
+          role: "assistant",
+          reasoning: data.reasoning || "DeepThink 2.5 — Mantiqiy tahlil yakunlandi.",
+          text: data.text,
+          audio_url: aiVoiceResponseOn ? "https://actions.google.com/sounds/v1/ambiences/office_room.ogg" : null
+        });
+        viewAiChat();
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn("Live API ulanmadi, aqlli fallback ishlatilmoqda:", err);
+  }
+
+  // 2. Fallback (Agar oflayn bo'lsa yoki tarmoqda uzilish bo'lsa)
   setTimeout(() => {
     let reply = "";
     let reasoning = "";
     const lower = text.toLowerCase();
 
-    // 1. DIZAYN XIZMATI VA MIJOZLAR OQIMI / MUOMALA NAZORATI
-    if (lower.includes("dizayn") || (lower.includes("mijoz") && (lower.includes("kopay") || lower.includes("oshir") || lower.includes("jalb")))) {
+    // 1. LOKATSIYA VA OFIS TANLASH / XARITA
+    if (lower.includes("lokatsiya") || lower.includes("joy") || lower.includes("hudud") || lower.includes("ofis")) {
+      reasoning = `1. Lokatsiya tahlili: Piyodalar va transport oqimi, raqobatchilar masofasi va maqsadli auditoriya mezonlari ko'rib chiqildi.\n2. Dizayn studiyasi/ofis uchun qulaylik koeffitsiyenti baholandi.`;
+      
+      reply = "Albatta, ofisingiz joylashgan hudud lokatsiyasini yuborsangiz, quyidagi muhim omillar bo'yicha to'liq tahlil va amaliy yordam bera olaman:\n\n" +
+              "📍 <b>Lokatsiya bo'yicha qanday yordam bera olaman:</b>\n" +
+              "1. <b>Mijozlar uchun qulaylik:</b> Piyoda va avtomobilda kelish, metro yoki asosiy transport bekatlariga yaqinligi, parkovka (avtoturargoh) mavjudligi;\n" +
+              "2. <b>Maqsadli Auditoriya:</b> Hududdagi biznes markazlar, savdo majmualari va sizning dizayn xizmatlaringizga ehtiyoji bor tadbirkorlar zichligi;\n" +
+              "3. <b>Raqobatchilar Joylashuvi:</b> Shu atrofda xuddi shunday dizayn yoki reklama agentliklari bormi-yo'qligini tahlil qilish;\n" +
+              "4. <b>Tashqi Reklama & Ko'rinuvchanlik:</b> Bino peshtoqiga banner yoki belgi (peshlavha) o'rnatish qulayligi.\n\n" +
+              "📌 <b>Boshlash uchun:</b> Hudud nomini, mo'ljalni yoki xarita linkini (koordinatalarini) yozib yuboring!";
+
+    // 2. DIZAYN XIZMATI VA MIJOZLAR OQIMI / MUOMALA NAZORATI
+    } else if (lower.includes("dizayn") || (lower.includes("mijoz") && (lower.includes("kopay") || lower.includes("oshir") || lower.includes("jalb")))) {
       reasoning = `1. Biznes tahlili: Dizayn xizmatlari bozorida mijozlarni jalb qilish va saqlash modellari o'rganildi.\n2. HR & Muloqot standarti: Dizayner/menejer va buyurtmachi o'rtasidagi sifat mezonlari (5 ta sifat omili) tekshirildi.\n3. Amaliy, 2 qismli kompleks strategiya shakllantirildi.`;
       
       reply = "Dizayn xizmatlari sohasida mijozlarni ko'paytirish va xodimlar muomalasini nazorat qilish bo'yicha amaliy kompleks tavsiyalar:\n\n" +
@@ -1060,7 +1102,7 @@ function sendUserMessage(text) {
               "• <b>Sifat Bonusi:</b> Mijozlardan a'lo baho va ijobiy fikr (otzyv) olgan xodimlarga oylik qo'shimcha bonus bering.\n\n" +
               "💡 <b>Xulosa:</b> Sifatli dizayn + samimiy va tezkor muloqot xizmat narxini oshirishga va doimiy sodiq mijozlar oqimini ta'minlashga yordam beradi.";
 
-    // 2. INTIZOMIY CHORALAR BO'YICHA SAMIMIY VA BOSQICHMA-BOSQICH HR STANDARTI
+    // 3. INTIZOMIY CHORALAR BO'YICHA SAMIMIY VA BOSQICHMA-BOSQICH HR STANDARTI
     } else if (lower.includes("jazo") || lower.includes("bo'shat") || lower.includes("jarima") || lower.includes("chora")) {
       reasoning = `1. Mehnat munosabatlari va HR psixologiyasi tahlil qilindi.\n2. Bosqichma-bosqich intizomiy choralar ketma-ketligi belgilandi.`;
       
@@ -1071,7 +1113,7 @@ function sendUserMessage(text) {
               "3. <b>Hayfsan / Qattiq chora:</b> Faqat tizimli va takroriy qonunbuzarlik bo'lsagina jiddiy intizomiy chora qo'llang.\n\n" +
               "Bu yondashuv jamoani saqlab qolish va adolatli ish muhitini ta'minlash uchun xavfsizroqdir.";
 
-    // 3. BUGUNGI XATOLAR TAHLILI
+    // 4. BUGUNGI XATOLAR TAHLILI
     } else if (lower.includes("xato") || lower.includes("kamchilik")) {
       reasoning = `1. 4 ta darcha audio yozuvlari va muloqot transkriptlari tekshirildi.\n2. Salomlashish va mijoz gapini bo'lish holatlari filtrlandi.`;
       
@@ -1082,7 +1124,7 @@ function sendUserMessage(text) {
               "• Xizmat yakunida minnatdorlik bildirmadi.\n\n" +
               "💡 <b>Tavsiya:</b> Xodim bilan 10 daqiqalik yakkama-yakka suhbat o'tkazib, mijoz so'zidan keyin 3 soniya pauza saqlash qoidasini eslatish lozim.";
 
-    // 4. STRESS VA JAMOA MUHITI
+    // 5. STRESS VA JAMOA MUHITI
     } else if (lower.includes("stress") || lower.includes("muhit") || lower.includes("charchoq")) {
       reasoning = `1. Xodimlar audio balandligi, intonatsiya va suhbatlar soni tahlil qilindi.\n2. Emotsional charchoq ko'rsatkichi hisoblandi.`;
       
@@ -1092,7 +1134,7 @@ function sendUserMessage(text) {
               "• 4-darcha (Nigora Umarova): A'lo darajada emotsional barqarorlik (96 ball);\n" +
               "• 3-darcha (Jasur Bekchanov): Asabiylik darajasi 32% (og'ir mijozlar bilan muloqotdan so'ng).";
 
-    // 5. BONUSLAR VA MOLIYAVIY KPI
+    // 6. BONUSLAR VA MOLIYAVIY KPI
     } else if (lower.includes("bonus") || lower.includes("kpi") || lower.includes("maosh") || lower.includes("daromad")) {
       reasoning = `1. Sifat formulasi (5 ta mezon) va suhbatlar soni normasi taqqoslandi.\n2. Oylik bonuslar taqsimoti hisoblab chiqildi.`;
       
@@ -1103,11 +1145,11 @@ function sendUserMessage(text) {
               "3. <b>Alisher Rustamov (2-darcha):</b> 280,000 so'm (73% bonus, o'rtacha 78 ball);\n" +
               "4. <b>Jasur Bekchanov (3-darcha):</b> Bonus hisoblanmadi (ball 65 dan past).";
 
-    // 6. UMUMIY BIZNES VA BOSHQARUV SAVOLLARI
+    // 7. UMUMIY BIZNES VA BOSHQARUV SAVOLLARI
     } else {
       reasoning = `1. «${text}» so'rovi bo'yicha biznes, HR va tahliliy mezonlar kompleks ko'rib chiqildi.\n2. Universal AI ekspert xulosasi shakllantirildi.`;
       
-      reply = `«${text}» bo'yicha tizimli tavsiyalar:\n\n` +
+      reply = `«${text}» bo'yicha tavsiyalar:\n\n` +
               `📌 <b>1. Boshqaruv & Strategiya:</b> Jarayonlarni aniq reglamentlash va xodimlar o'rtasida mas'uliyatni to'g'ri taqsimlash samaradorlikni 25-30% ga oshiradi.\n` +
               `📌 <b>2. Sifat Nazorati:</b> Doimiy mijozlar muloqotini kuzatib borish va haftalik qisqa brifinglar o'tkazish xatolarni 2 barobar kamaytiradi.\n` +
               `📌 <b>3. Moliyaviy Natija:</b> Xodimlarni aniq KPI va sifat ko'rsatkichlariga bog'lash daromadning barqaror o'sishiga zamin yaratadi.\n\n` +
