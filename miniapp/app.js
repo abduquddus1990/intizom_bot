@@ -1039,125 +1039,24 @@ function viewCamera() {
 
 // =========================================================================
 // =========================================================================
-// 7. INTIZOM AI CHAT — Universal AI Maslahatchi (Charismatic Voice & Shef)
+// 7. INTIZOM AI CHAT — Universal AI Maslahatchi (Shef Persona)
 // =========================================================================
 let currentAiTone = "normal";   // 'normal', 'formal', 'concise'
 let isAiThinking = false;
 let aiDailyRemaining = 28;
-let aiVoiceResponseOn = false;
-let currentSpeakingIndex = -1;
-let synth = window.speechSynthesis;
-let currentUtterance = null;
+
+// Agar fon rejimida ovoz o'qilayotgan bo'lsa, to'xtatish
+if (window.speechSynthesis) {
+  window.speechSynthesis.cancel();
+}
 
 let chatMessages = [
   { 
     role: "assistant", 
     reasoning: "Universal AI (DeepThink) yuklandi: Korxona profili, 4 ta darcha audio monitoringi va biznes strategiyasi faol.",
-    text: "Assalomu alaykum, **Shef**! Men sizning shaxsiy Universal AI Maslahatchingizman. Biznes boshqaruv, dizayn xizmatlari, mijozlar oqimini oshirish, xodimlar muomalasi va moliyaviy tahlilda sizga yordam berishga tayyorman. Barcha javoblarimni matnda o'qishingiz yoki **🔊 Ovozli eshitish** tugmasi orqali qulay tinglashingiz mumkin. Qanday masalada tahlil olib boramiz, Shef?" 
+    text: "Assalomu alaykum, **Shef**! Men sizning shaxsiy Universal AI Maslahatchingizman. Biznes boshqaruv, dizayn xizmatlari, mijozlar oqimini oshirish, xodimlar muomalasi va moliyaviy KPI masalalarida yordam berishga tayyorman. Qanday masalada tahlil olib boramiz, Shef?" 
   },
 ];
-
-function toggleAiVoiceResponse() {
-  aiVoiceResponseOn = !aiVoiceResponseOn;
-  if (!aiVoiceResponseOn) {
-    stopSpeech();
-  }
-  showToast(aiVoiceResponseOn ? "🔊 Avto-ovozli javob yoqildi (Shef)" : "🔇 Ovozli javob o'chirildi", "graphic_eq");
-  viewAiChat();
-}
-
-function cleanTextForSpeech(raw) {
-  if (!raw) return "";
-  return raw
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/[#*•_`~\[\]\(\)]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function togglePlayVoice(btn, mIndex) {
-  if (currentSpeakingIndex === mIndex) {
-    stopSpeech();
-    return;
-  }
-  stopSpeech();
-  const msg = chatMessages[mIndex];
-  if (!msg || !msg.text) return;
-
-  speakText(msg.text, mIndex);
-}
-
-function speakText(text, mIndex) {
-  if (!synth) {
-    showToast("Kechirasiz, brauzeringiz ovozli sintezni qo'llab-quvvatlamaydi", "volume_off");
-    return;
-  }
-  synth.cancel();
-
-  const clean = cleanTextForSpeech(text);
-  currentUtterance = new SpeechSynthesisUtterance(clean);
-  
-  // Salobatli, mayin va jozibali ovoz sozlamalari (Ayoz tembri)
-  const voices = synth.getVoices();
-  const uzVoice = voices.find(v => v.lang.startsWith("uz")) 
-               || voices.find(v => v.lang.startsWith("tr"))
-               || voices.find(v => v.lang.startsWith("ru"))
-               || voices.find(v => v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("dmitry") || v.name.toLowerCase().includes("david"))
-               || voices[0];
-  
-  if (uzVoice) {
-    currentUtterance.voice = uzVoice;
-  }
-
-  currentUtterance.rate = 1.02; // Ravon va yoqimli tezlik
-  currentUtterance.pitch = 0.92; // Salobatli va jozibali tembr
-
-  currentSpeakingIndex = mIndex;
-  updateVoiceButtonsUI();
-
-  currentUtterance.onend = () => {
-    currentSpeakingIndex = -1;
-    updateVoiceButtonsUI();
-  };
-
-  currentUtterance.onerror = (e) => {
-    console.warn("TTS Error:", e);
-    currentSpeakingIndex = -1;
-    updateVoiceButtonsUI();
-  };
-
-  synth.speak(currentUtterance);
-}
-
-function stopSpeech() {
-  if (synth) synth.cancel();
-  currentSpeakingIndex = -1;
-  updateVoiceButtonsUI();
-}
-
-function updateVoiceButtonsUI() {
-  const btns = document.querySelectorAll(".ai-audio-play-btn");
-  btns.forEach((btn) => {
-    const idx = parseInt(btn.getAttribute("data-msg-index"), 10);
-    const isPlaying = idx === currentSpeakingIndex;
-    const wave = btn.parentElement?.querySelector(".audio-wave-anim");
-    const icon = btn.querySelector(".material-symbols-outlined");
-    const label = btn.querySelector(".audio-btn-text");
-
-    if (isPlaying) {
-      btn.classList.add("is-playing");
-      if (icon) icon.textContent = "stop_circle";
-      if (label) label.textContent = "To'xtatish";
-      if (wave) wave.classList.remove("hidden");
-    } else {
-      btn.classList.remove("is-playing");
-      if (icon) icon.textContent = "volume_up";
-      if (label) label.textContent = "🔊 Ovozli eshitish";
-      if (wave) wave.classList.add("hidden");
-    }
-  });
-}
 
 function viewAiChat() {
   const hasUserChatted = chatMessages.some(m => m.role === "user");
@@ -1229,13 +1128,6 @@ function viewAiChat() {
             </div>
 
             <div class="ai-right-controls">
-              <button class="ai-pill-btn ${aiVoiceResponseOn ? 'active-mode' : ''}" onclick="toggleAiVoiceResponse()" title="Avto-ovozli javob">
-                <span class="material-symbols-outlined" style="font-size:15px; color:${aiVoiceResponseOn ? '#10b981' : '#38bdf8'};">
-                  ${aiVoiceResponseOn ? 'volume_up' : 'graphic_eq'}
-                </span>
-                <span>${aiVoiceResponseOn ? 'Avto-Ovoz On' : 'Ovozli'}</span>
-              </button>
-
               <button class="ai-send-gradient-btn" id="ai-send-btn" onclick="submitChatMessage()" title="Yuborish">
                 <span class="material-symbols-outlined" style="font-size:18px;">north_east</span>
               </button>
@@ -1246,7 +1138,7 @@ function viewAiChat() {
 
       <!-- 2. O'RTA QISM: XABARLAR MAYDONI -->
       <div class="chat-messages-area" id="chat-box">
-        ${chatMessages.map((m, idx) => `
+        ${chatMessages.map((m) => `
           <div class="chat-bubble ${m.role}">
             ${m.reasoning ? `
               <div class="deepthink-reasoning-box">
@@ -1258,20 +1150,15 @@ function viewAiChat() {
               </div>
             ` : ""}
             <div class="chat-text-content" style="white-space:pre-line; line-height:1.6; font-size:13.5px;">${formatAiMessageText(m.text)}</div>
-            
-            ${m.role === "assistant" ? `
-              <div class="ai-audio-bar">
-                <button class="ai-audio-play-btn ${currentSpeakingIndex === idx ? 'is-playing' : ''}" data-msg-index="${idx}" onclick="togglePlayVoice(this, ${idx})">
-                  <span class="material-symbols-outlined" style="font-size:16px;">${currentSpeakingIndex === idx ? 'stop_circle' : 'volume_up'}</span>
-                  <span class="audio-btn-text">${currentSpeakingIndex === idx ? "To'xtatish" : "🔊 Ovozli eshitish"}</span>
-                </button>
-                <div class="audio-wave-anim ${currentSpeakingIndex === idx ? '' : 'hidden'}">
-                  <span></span><span></span><span></span><span></span><span></span>
-                </div>
-              </div>
-            ` : ""}
           </div>
         `).join("")}
+        ${isAiThinking ? `
+          <div class="chat-bubble assistant" style="display:flex; align-items:center; gap:8px; opacity:0.85;">
+            <span class="material-symbols-outlined" style="font-size:18px; color:#c084fc; animation:spin 1.5s linear infinite;">psychology</span>
+            <span>Universal AI tahlil qilmoqda (Shef uchun DeepThink)...</span>
+          </div>
+        ` : ""}
+      </div>
         ${isAiThinking ? `
           <div class="chat-bubble assistant" style="display:flex; align-items:center; gap:8px; opacity:0.85;">
             <span class="material-symbols-outlined" style="font-size:18px; color:#c084fc; animation:spin 1.5s linear infinite;">psychology</span>
@@ -1346,7 +1233,7 @@ function resetAiChat() {
     { 
       role: "assistant", 
       reasoning: "Universal AI (DeepThink) yuklandi: Korxona profili, 4 ta darcha audio monitoringi va biznes strategiyasi faol.",
-      text: "Assalomu alaykum, **Shef**! Men sizning shaxsiy Universal AI Maslahatchingizman. Biznes boshqaruv, dizayn xizmatlari, mijozlar oqimini oshirish, xodimlar muomalasi va moliyaviy tahlilda sizga yordam berishga tayyorman. Barcha javoblarimni matnda o'qishingiz yoki **🔊 Ovozli eshitish** tugmasi orqali qulay tinglashingiz mumkin. Qanday masalada tahlil olib boramiz, Shef?" 
+      text: "Assalomu alaykum, **Shef**! Men sizning shaxsiy Universal AI Maslahatchingizman. Biznes boshqaruv, dizayn xizmatlari, mijozlar oqimini oshirish, xodimlar muomalasi va moliyaviy KPI masalalarida yordam berishga tayyorman. Qanday masalada tahlil olib boramiz, Shef?" 
     },
   ];
   showToast("Chat tozalandi", "refresh");
