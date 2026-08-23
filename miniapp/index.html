@@ -107,23 +107,47 @@
     </aside>
 
     <!-- Profil oynasi Dropdown -->
-    <div id="profile-dropdown" class="dropdown glass-card hidden">
+    <div id="profile-dropdown" class="dropdown glass-card hidden" style="width: 320px;">
       <div class="dropdown-header">
-        <div class="dropdown-avatar" id="dropdown-avatar-circle">Q</div>
-        <div>
-          <p id="dropdown-name" class="dropdown-name">Quddusxon</p>
-          <p id="dropdown-role" class="dropdown-role">Boshqaruvchi</p>
+        <div class="dropdown-avatar" id="dropdown-avatar-circle">D</div>
+        <div style="flex:1; min-width:0;">
+          <p id="dropdown-name" class="dropdown-name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Dilshod Saidov (@DS210)</p>
+          <p id="dropdown-role" class="dropdown-role">Rahbar · Boshqaruvchi</p>
         </div>
       </div>
+      
       <div class="dropdown-divider"></div>
-      <div class="dropdown-quick-stats">
-        <div class="d-stat"><span>Bugungi tahlillar:</span> <b>48 ta</b></div>
-        <div class="d-stat"><span>O'rtacha sifat:</span> <b>88.4 / 100</b></div>
+      
+      <!-- Korxona Ma'lumotlari Bloki -->
+      <div class="profile-meta-list" style="display:flex; flex-direction:column; gap:7px; font-size:12px;">
+        <div class="p-meta-item" style="display:flex; justify-content:space-between; gap:6px;">
+          <span style="color:var(--text-muted);">🏢 Korxona:</span>
+          <b id="p-company-name" style="color:var(--text-main); text-align:right;">Intizom & Dizayn Studiyasi</b>
+        </div>
+        <div class="p-meta-item" style="display:flex; justify-content:space-between; gap:6px;">
+          <span style="color:var(--text-muted);">🎨 Faoliyat turi:</span>
+          <b id="p-industry" style="color:var(--text-main); text-align:right;">Dizayn & Poligrafiya</b>
+        </div>
+        <div class="p-meta-item" style="display:flex; justify-content:space-between; gap:6px;">
+          <span style="color:var(--text-muted);">📍 Hudud:</span>
+          <b id="p-location" style="color:var(--text-main); text-align:right;">Toshkent sh., Yunusobod</b>
+        </div>
+        <div class="p-meta-item" style="display:flex; justify-content:space-between; gap:6px;">
+          <span style="color:var(--text-muted);">⏳ Faoliyat staji:</span>
+          <b id="p-experience" style="color:var(--text-main); text-align:right;">5 yil</b>
+        </div>
       </div>
+
       <div class="dropdown-divider"></div>
-      <button id="dropdown-settings-btn" class="dropdown-item-btn">
-        <span class="material-symbols-outlined">tune</span> Sozlamalar va Fonlar
-      </button>
+
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <button class="action-btn-pill" style="width:100%; justify-content:center; padding:8px 10px; background:rgba(56,189,248,0.15); border-color:#38bdf8; color:#fff;" onclick="openEditProfileModal()">
+          <span class="material-symbols-outlined" style="font-size:16px; color:#38bdf8;">edit_note</span> Korxona Ma'lumotlarini Tahrirlash
+        </button>
+        <button id="dropdown-settings-btn" class="dropdown-item-btn" onclick="navigateTo('settings'); document.getElementById('profile-dropdown').classList.add('hidden');">
+          <span class="material-symbols-outlined">tune</span> Sozlamalar va Fonlar
+        </button>
+      </div>
     </div>
 
     <!-- Asosiy Ko'rinish (View Slot) -->

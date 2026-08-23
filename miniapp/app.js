@@ -24,8 +24,17 @@ const ADVANCED_NAV_ITEMS = [
   { key: "live_radar", icon: "notifications_active", label_uz: "Jonli Radar & Alerts", label_ru: "Радар & Оповещения" },
 ];
 
+let companyProfile = {
+  full_name: "Dilshod Saidov (@DS210)",
+  company_name: "Intizom & Dizayn Studiyasi",
+  industry: "Dizaynerlik, Poligrafiya va Mijozlarga Xizmat",
+  location: "Toshkent shahri, Yunusobod tumani",
+  experience: "5 yil",
+  role: "Rahbar (Boshqaruvchi)",
+};
+
 let currentUser = {
-  full_name: "Quddusxon",
+  full_name: companyProfile.full_name,
   role: "manager",
   permissions: ["reports", "attendance", "employees", "ai_chat", "camera", "settings", "analytics", "live_radar"],
   language: "uz",
@@ -62,8 +71,8 @@ const TRANSLATIONS = {
     filter_bad: "🔴 Past (<60)",
     attendance_title: "Xodimlar Davomati va Mikrofon Holati",
     attendance_sub: "Heartbeat va ovoz faolligi nazorati (24/7 Monitoring)",
-    employees_title: "Xodimlar Ro'yxati",
-    employees_sub: "Darchalar, oklad va umumiy KPI ko'rsatkichlari",
+    employees_title: "Xodimlar va Mikrofonlar Boshqaruvi",
+    employees_sub: "Xodimlarni qo'shish, tahrirlash va mikrofon biriktirish",
     analytics_title: "Dinamika va Tahliliy Ko'rsatkichlar",
     analytics_sub: "Haftalik sifat trendlari va xatoliklar taqsimoti",
     radar_title: "Jonli Radar va Xavfsizlik Signallari",
@@ -88,8 +97,8 @@ const TRANSLATIONS = {
     filter_bad: "🔴 Низко (<60)",
     attendance_title: "Посещаемость и статус микрофонов",
     attendance_sub: "Контроль Heartbeat и голосовой активности (24/7)",
-    employees_title: "Список сотрудников",
-    employees_sub: "Окна, оклады и показатели KPI",
+    employees_title: "Управление сотрудниками и микрофонами",
+    employees_sub: "Добавление, редактирование и привязка микрофонов",
     analytics_title: "Динамика и аналитические показатели",
     analytics_sub: "Недельные тренды качества и распределение ошибок",
     radar_title: "Живой Радар и оповещения безопасности",
@@ -121,12 +130,12 @@ const DEMO_DATA = {
       employee_name: "Dilnoza Karimova",
       workstation: "1-Darcha",
       time: "10:42",
-      score: 94,
+      score: 92,
       duration: "3 daq 12 son",
-      summary: "Mijozga kadastr ma'lumotnomasini olish bo'yicha to'liq va xushmuomala xizmat ko'rsatildi.",
-      criteria: { salomlashish: 15, tinglash: 20, malumot: 28, yechim: 18, xayrlashish: 13 },
+      summary: "Mijozga elektron hisob-faktura tizimi bo'yicha to'liq va muloyim tushuntirish berildi.",
+      criteria: { salomlashish: 15, tinglash: 18, malumot: 28, yechim: 18, xayrlashish: 13 },
       errors: [],
-      strengths: ["Xushfe'l salomlashdi", "Barcha hujjatlarni bosqichma-bosqich tushuntirdi"],
+      strengths: ["Xushmuomala salomlashdi", "Barcha savollarga to'liq javob berdi"],
       audio_url: "https://actions.google.com/sounds/v1/ambiences/office_room.ogg",
     },
     {
@@ -134,19 +143,19 @@ const DEMO_DATA = {
       employee_name: "Alisher Rustamov",
       workstation: "2-Darcha",
       time: "10:15",
-      score: 72,
+      score: 78,
       duration: "4 daq 05 son",
-      summary: "Xodim ma'lumot berdi, ammo davlat boji miqdorini tushuntirishda biroz noaniqlikka yo'l qo'ydi.",
-      criteria: { salomlashish: 12, tinglash: 15, malumot: 20, yechim: 15, xayrlashish: 10 },
-      errors: [{ text: "Boj miqdorini aniq bilmadi", fix: "Yangi tariflar jadvaliga qarang" }],
-      strengths: ["Sabr bilan tingladi"],
+      summary: "Mijozga STIR ma'lumotnomasi berildi, ammo xodim biroz shoshib javob berdi.",
+      criteria: { salomlashish: 12, tinglash: 15, malumot: 24, yechim: 16, xayrlashish: 11 },
+      errors: [{ text: "Xayrlashuv samimiy bo'lmadi", fix: "Mijozga minnatdorchilik bildiring" }],
+      strengths: ["Tezkor xizmat ko'rsatildi"],
       audio_url: "https://actions.google.com/sounds/v1/ambiences/office_room.ogg",
     },
     {
       id: "c-103",
       employee_name: "Jasur Bekchanov",
       workstation: "3-Darcha",
-      time: "09:30",
+      time: "09:32",
       score: 48,
       duration: "1 daq 40 son",
       summary: "Xodim asabiy ohangda javob berdi, salomlashmadi va mijoz savolini oxirigacha tinglamadi.",
@@ -192,9 +201,223 @@ const DEMO_DATA = {
 };
 
 let currentFilter = "all";
+let employeeSearchQuery = "";
 
 function isPreviewMode() {
   return !tg || !tg.initData;
+}
+
+function loadCompanyProfile() {
+  const saved = localStorage.getItem("intizom_company_profile");
+  if (saved) {
+    try { companyProfile = { ...companyProfile, ...JSON.parse(saved) }; } catch (e) {}
+  }
+}
+
+function saveCompanyProfile(data) {
+  companyProfile = { ...companyProfile, ...data };
+  localStorage.setItem("intizom_company_profile", JSON.stringify(companyProfile));
+  updateProfileUI();
+}
+
+function updateProfileUI() {
+  const avatarLetter = document.getElementById("avatar-letter");
+  if (avatarLetter) avatarLetter.textContent = companyProfile.full_name ? companyProfile.full_name.replace('@', '').charAt(0).toUpperCase() : "D";
+  
+  const dropdownAvatar = document.getElementById("dropdown-avatar-circle");
+  if (dropdownAvatar) dropdownAvatar.textContent = avatarLetter ? avatarLetter.textContent : "D";
+
+  const dropdownName = document.getElementById("dropdown-name");
+  if (dropdownName) dropdownName.textContent = companyProfile.full_name;
+
+  const pCompany = document.getElementById("p-company-name");
+  if (pCompany) pCompany.textContent = companyProfile.company_name;
+
+  const pIndustry = document.getElementById("p-industry");
+  if (pIndustry) pIndustry.textContent = companyProfile.industry;
+
+  const pLocation = document.getElementById("p-location");
+  if (pLocation) pLocation.textContent = companyProfile.location;
+
+  const pExp = document.getElementById("p-experience");
+  if (pExp) pExp.textContent = companyProfile.experience;
+
+  const sidebarWhoami = document.getElementById("sidebar-whoami");
+  if (sidebarWhoami) sidebarWhoami.textContent = `${companyProfile.full_name} (${companyProfile.role})`;
+}
+
+function openEditProfileModal() {
+  const dd = document.getElementById("profile-dropdown");
+  if (dd) dd.classList.add("hidden");
+
+  const bodyHtml = `
+    <form onsubmit="submitEditProfileForm(event)" style="display:flex; flex-direction:column; gap:12px;">
+      <div>
+        <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">👤 Foydalanuvchi F.I.Sh / Username:</label>
+        <input type="text" id="edit-fullname" value="${companyProfile.full_name}" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">🏢 Korxona Nomi:</label>
+        <input type="text" id="edit-company" value="${companyProfile.company_name}" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">🎨 Faoliyat Turi / Soha:</label>
+        <input type="text" id="edit-industry" value="${companyProfile.industry}" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">📍 Joylashgan Hududi (Manzil):</label>
+        <input type="text" id="edit-location" value="${companyProfile.location}" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">⏳ Faoliyat Staji (Tajriba):</label>
+        <input type="text" id="edit-experience" value="${companyProfile.experience}" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+      </div>
+      <button type="submit" class="action-btn-pill" style="margin-top:6px; width:100%; justify-content:center; padding:11px; background:var(--primary); color:#fff; font-size:14px; font-weight:700; border:none; border-radius:8px;">
+        <span class="material-symbols-outlined">save</span> Ma'lumotlarni Saqlash
+      </button>
+    </form>
+  `;
+  openModal("🏢 Korxona va Profil Ma'lumotlari", bodyHtml);
+}
+
+function submitEditProfileForm(e) {
+  e.preventDefault();
+  const updated = {
+    full_name: document.getElementById("edit-fullname").value.trim(),
+    company_name: document.getElementById("edit-company").value.trim(),
+    industry: document.getElementById("edit-industry").value.trim(),
+    location: document.getElementById("edit-location").value.trim(),
+    experience: document.getElementById("edit-experience").value.trim()
+  };
+  saveCompanyProfile(updated);
+  closeModal();
+  showToast("✅ Korxona ma'lumotlari yangilandi", "verified");
+}
+
+function loadEmployees() {
+  const saved = localStorage.getItem("intizom_employees_list");
+  if (saved) {
+    try { DEMO_DATA.employees = JSON.parse(saved); } catch (e) {}
+  }
+}
+
+function saveEmployees() {
+  localStorage.setItem("intizom_employees_list", JSON.stringify(DEMO_DATA.employees));
+  DEMO_DATA.stats.active_mics = `${DEMO_DATA.employees.length} / ${DEMO_DATA.employees.length}`;
+}
+
+function handleEmployeeSearch(val) {
+  employeeSearchQuery = val;
+  viewEmployees();
+  const inp = document.getElementById("emp-search-input");
+  if (inp) {
+    inp.focus();
+    inp.setSelectionRange(inp.value.length, inp.value.length);
+  }
+}
+
+function openAddEmployeeModal() {
+  const nextMicNum = DEMO_DATA.employees.length + 1;
+  const bodyHtml = `
+    <form onsubmit="submitAddEmployeeForm(event)" style="display:flex; flex-direction:column; gap:12px;">
+      <div>
+        <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">👤 Xodim F.I.Sh (Ismi):</label>
+        <input type="text" id="add-emp-name" placeholder="Masalan: Sardor Aliyev" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">💼 Lavozimi / Mutaxassisligi:</label>
+        <input type="text" id="add-emp-pos" placeholder="Masalan: Yetakchi Dizayner" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div>
+          <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">🏢 Darcha / Joyi:</label>
+          <input type="text" id="add-emp-ws" value="${nextMicNum}-Darcha" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+        </div>
+        <div>
+          <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">🎙️ Mikrofon ID:</label>
+          <input type="text" id="add-emp-mic" value="mic-${nextMicNum}" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+        </div>
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">💰 Oylik Oklad (so'mda):</label>
+        <input type="text" id="add-emp-salary" value="4,500,000" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+      </div>
+      <button type="submit" class="action-btn-pill" style="margin-top:6px; width:100%; justify-content:center; padding:11px; background:var(--primary); color:#fff; font-size:14px; font-weight:700; border:none; border-radius:8px;">
+        <span class="material-symbols-outlined">person_add</span> Xodimni Qo'shish & Saqlash
+      </button>
+    </form>
+  `;
+  openModal("➕ Yangi Xodim & Mikrofon Qo'shish", bodyHtml);
+}
+
+function submitAddEmployeeForm(e) {
+  e.preventDefault();
+  const name = document.getElementById("add-emp-name").value.trim();
+  const pos = document.getElementById("add-emp-pos").value.trim();
+  const ws = document.getElementById("add-emp-ws").value.trim();
+  const mic = document.getElementById("add-emp-mic").value.trim();
+  const salary = document.getElementById("add-emp-salary").value.trim();
+
+  DEMO_DATA.employees.push({
+    name,
+    pos,
+    ws,
+    mic,
+    salary,
+    score: 88,
+    total: 0
+  });
+  saveEmployees();
+  closeModal();
+  showToast(`✅ "${name}" tizimga qo'shildi (${mic})`, "person_add");
+  viewEmployees();
+}
+
+function openEditMicModal(empIndex) {
+  const emp = DEMO_DATA.employees[empIndex];
+  if (!emp) return;
+  const bodyHtml = `
+    <form onsubmit="submitEditMicForm(event, ${empIndex})" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="font-size:13px; color:var(--text-muted);">
+        Xodim: <b style="color:#fff;">${emp.name}</b> (${emp.pos})
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">🎙️ Biriktirilgan Mikrofon ID:</label>
+        <input type="text" id="edit-emp-mic" value="${emp.mic}" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:4px;">🏢 Darcha / Ish joyi:</label>
+        <input type="text" id="edit-emp-ws" value="${emp.ws}" required style="width:100%; background:rgba(255,255,255,0.08); border:1px solid var(--card-border); border-radius:8px; padding:9px 12px; color:#fff; font-size:13.5px; outline:none;" />
+      </div>
+      <button type="submit" class="action-btn-pill" style="margin-top:6px; width:100%; justify-content:center; padding:11px; background:#38bdf8; color:#fff; font-size:14px; font-weight:700; border:none; border-radius:8px;">
+        <span class="material-symbols-outlined">check_circle</span> Mikrofonni Saqlash
+      </button>
+    </form>
+  `;
+  openModal("🎙️ Mikrofonni Biriktirish / O'zgartirish", bodyHtml);
+}
+
+function submitEditMicForm(e, empIndex) {
+  e.preventDefault();
+  const emp = DEMO_DATA.employees[empIndex];
+  if (!emp) return;
+  emp.mic = document.getElementById("edit-emp-mic").value.trim();
+  emp.ws = document.getElementById("edit-emp-ws").value.trim();
+  saveEmployees();
+  closeModal();
+  showToast(`✅ "${emp.name}" uchun mikrofon ${emp.mic} ga biriktirildi`, "graphic_eq");
+  viewEmployees();
+}
+
+function deleteEmployee(empIndex) {
+  const emp = DEMO_DATA.employees[empIndex];
+  if (!emp) return;
+  if (confirm(`Rostdan ham "${emp.name}"ni ro'yxatdan o'chirmoqchimisiz?`)) {
+    DEMO_DATA.employees.splice(empIndex, 1);
+    saveEmployees();
+    showToast(`🗑️ "${emp.name}" o'chirildi`, "delete");
+    viewEmployees();
+  }
 }
 
 function applyTheme(themeKey) {
@@ -437,39 +660,72 @@ function viewAttendance() {
 }
 
 // =========================================================================
-// 3. XODIMLAR BO'LIMI (EMPLOYEES)
+// 3. XODIMLAR BO'LIMI (EMPLOYEES & MICROPHONES)
 // =========================================================================
 function viewEmployees() {
-  const emps = DEMO_DATA.employees;
+  loadEmployees();
+  let emps = DEMO_DATA.employees;
+  if (employeeSearchQuery.trim()) {
+    const q = employeeSearchQuery.toLowerCase();
+    emps = emps.filter(e => e.name.toLowerCase().includes(q) || e.pos.toLowerCase().includes(q) || e.mic.toLowerCase().includes(q) || e.ws.toLowerCase().includes(q));
+  }
+
   const html = `
     <div class="view-header">
       <div class="view-title-box">
-        <h2>${t("employees_title")}</h2>
+        <h2>${t("employees_title")} (${DEMO_DATA.employees.length} ta)</h2>
         <p>${t("employees_sub")}</p>
       </div>
-      <button class="action-btn-pill" onclick="showToast('Yangi xodim qo\'shish oynasi', 'person_add')">
+      <button class="action-btn-pill" style="background:var(--primary); color:#fff; padding:8px 14px;" onclick="openAddEmployeeModal()">
         <span class="material-symbols-outlined">person_add</span> Xodim Qo'shish
       </button>
     </div>
 
+    <!-- Tezkor Qidiruv va Filtr -->
+    <div style="margin-bottom:14px; display:flex; gap:10px; align-items:center;">
+      <div style="flex:1; position:relative;">
+        <input 
+          type="text" 
+          id="emp-search-input" 
+          placeholder="🔍 Ism, lavozim yoki mikrofon ID bo'yicha qidirish..." 
+          value="${employeeSearchQuery}"
+          oninput="handleEmployeeSearch(this.value)"
+          style="width:100%; background:rgba(255,255,255,0.06); border:1px solid var(--card-border); border-radius:999px; padding:9px 16px; font-size:13px; color:#fff; outline:none;"
+        />
+      </div>
+    </div>
+
     <ul class="item-list">
-      ${emps.map((e) => `
-        <li class="item-card glass-card">
-          <div class="score-circle ${e.score >= 85 ? "good" : e.score >= 60 ? "mid" : "bad"}">${e.score}</div>
-          <div class="item-info">
-            <div class="item-title">
-              <span>${e.name}</span>
-              <span class="item-badge-pill">${e.pos}</span>
-            </div>
-            <div class="item-subtitle">
-              ${e.ws} (${e.mic}) · Oklad: ${e.salary} so'm · Jami suhbatlar: ${e.total} ta
-            </div>
-          </div>
-          <button class="action-btn-pill" onclick="showToast('${e.name} shaxsiy hisoboti ochildi', 'receipt_long')">
-            Hisobot
-          </button>
+      ${emps.length === 0 ? `
+        <li class="glass-card" style="padding:28px; text-align:center; color:var(--text-muted);">
+          <span class="material-symbols-outlined" style="font-size:36px; opacity:0.6;">search_off</span>
+          <p style="margin-top:6px; font-size:13.5px;">Bunday xodim yoki mikrofon topilmadi</p>
         </li>
-      `).join("")}
+      ` : emps.map((e) => {
+        const origIndex = DEMO_DATA.employees.indexOf(e);
+        return `
+          <li class="item-card glass-card">
+            <div class="score-circle ${e.score >= 85 ? "good" : e.score >= 60 ? "mid" : "bad"}">${e.score || 85}</div>
+            <div class="item-info">
+              <div class="item-title">
+                <span>${e.name}</span>
+                <span class="item-badge-pill" style="color:var(--primary);">${e.pos}</span>
+              </div>
+              <div class="item-subtitle">
+                ${e.ws} · <b>Mikrofon:</b> <span style="color:#38bdf8; font-weight:700;">${e.mic}</span> · Oklad: ${e.salary} so'm
+              </div>
+            </div>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button class="action-btn-pill" style="padding:6px 10px; font-size:11.5px; background:rgba(56,189,248,0.12); border-color:rgba(56,189,248,0.3); color:#38bdf8;" title="Mikrofonni o'zgartirish" onclick="openEditMicModal(${origIndex})">
+                <span class="material-symbols-outlined" style="font-size:15px;">settings_voice</span> Mikrofon
+              </button>
+              <button class="action-btn-pill" style="padding:6px 8px; background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.3); color:#ef4444;" title="Xodimni o'chirish" onclick="deleteEmployee(${origIndex})">
+                <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
+              </button>
+            </div>
+          </li>
+        `;
+      }).join("")}
     </ul>
   `;
   setView(html);
@@ -1322,7 +1578,10 @@ function closeSidebar() {
 
 function init() {
   initTheme();
+  loadCompanyProfile();
+  loadEmployees();
   renderSidebar();
+  updateProfileUI();
 
   document.getElementById("menu-btn").addEventListener("click", openSidebar);
   document.getElementById("sidebar-close").addEventListener("click", closeSidebar);
@@ -1343,13 +1602,6 @@ function init() {
     if (dd && !dd.contains(e.target) && e.target.id !== "profile-btn") {
       dd.classList.add("hidden");
     }
-    const modePopover = document.getElementById("ai-mode-popover");
-    const modeBtn = document.getElementById("ai-mode-btn");
-    if (modePopover && !modePopover.classList.contains("hidden")) {
-      if (!modePopover.contains(e.target) && !modeBtn?.contains(e.target)) {
-        modePopover.classList.add("hidden");
-      }
-    }
   });
 
   document.getElementById("theme-quick-btn").addEventListener("click", () => {
@@ -1359,17 +1611,6 @@ function init() {
   document.getElementById("radar-quick-btn").addEventListener("click", () => {
     navigateTo("live_radar");
   });
-
-  document.getElementById("dropdown-settings-btn").addEventListener("click", () => {
-    document.getElementById("profile-dropdown").classList.add("hidden");
-    navigateTo("settings");
-  });
-
-  document.getElementById("sidebar-whoami").textContent = `${currentUser.full_name} (Boshqaruvchi)`;
-  document.getElementById("dropdown-name").textContent = currentUser.full_name;
-  document.getElementById("dropdown-role").textContent = "Boshqaruvchi";
-  document.getElementById("avatar-letter").textContent = currentUser.full_name.charAt(0);
-  document.getElementById("dropdown-avatar-circle").textContent = currentUser.full_name.charAt(0);
 
   const initialKey = location.hash.replace("#", "") || "reports";
   navigateTo(initialKey);
