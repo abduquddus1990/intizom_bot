@@ -25,6 +25,7 @@ Muhit o'zgaruvchilari (.env fayl):
 """
 
 import os
+import sys
 import io
 import json
 import base64
@@ -33,6 +34,9 @@ import asyncio
 import logging
 from datetime import datetime, date, timedelta, time as dtime
 from pathlib import Path
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 import httpx
 from aiogram import Bot, Dispatcher, F, Router
@@ -97,6 +101,10 @@ WATCH_INTERVAL_SEC = 15
 # TZ 4.1: bu ikkalasi hardcode emas — muhit o'zgaruvchisidan o'qiladi,
 # shuning uchun kelajakda mijozga qarab (yoki takliflar soniga qarab)
 # kodni o'zgartirmasdan sozlash mumkin.
+import socket
+import aiohttp
+from aiogram.client.session.aiohttp import AiohttpSession
+
 BONUS_MAX_PERCENT = float(os.getenv("BONUS_MAX_PERCENT", "0.10"))
 MONTHLY_CONVERSATION_NORM = int(os.getenv("MONTHLY_CONVERSATION_NORM", "20"))
 
@@ -1590,12 +1598,13 @@ async def watch_recordings_folder():
 
 async def main():
     logger.info("Bot ishga tushdi...")
-    # "/start" buyrug'ini ro'yxatdan o'tkazamiz — shunda Telegram uni
-    # matn maydoni yonida bosiladigan buyruq sifatida ko'rsatadi, foydalanuvchi
-    # "start" so'zini qo'lda yozishi shart bo'lmaydi.
-    await bot.set_my_commands([
-        BotCommand(command="start", description="Botni ishga tushirish"),
-    ])
+    try:
+        await bot.set_my_commands([
+            BotCommand(command="start", description="Botni ishga tushirish"),
+        ])
+    except Exception as e:
+        logger.warning(f"set_my_commands xatosi (o'tkazib yuboriladi): {e}")
+
     asyncio.create_task(watch_recordings_folder())
     asyncio.create_task(daily_maintenance_loop())
     await dp.start_polling(bot)
@@ -1603,3 +1612,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
