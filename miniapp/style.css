@@ -1992,3 +1992,74 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 480px) {
   .stats-grid-4 { grid-template-columns: 1fr; }
 }
+
+/* =========================================================================
+   AI OVOZLI XABAR VA CHARISMATIC AUDIO PLAYER
+   ========================================================================= */
+.ai-audio-bar {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-audio-play-btn {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.ai-audio-play-btn:hover {
+  background: #38bdf8;
+  color: #0b1522;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+}
+
+.ai-audio-play-btn.is-playing {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: #ef4444;
+  color: #ef4444;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Equalizer / Ovoz to'lqinlari animatsiyasi */
+.audio-wave-anim {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 16px;
+}
+
+.audio-wave-anim.hidden {
+  display: none;
+}
+
+.audio-wave-anim span {
+  width: 3px;
+  height: 100%;
+  background: #38bdf8;
+  border-radius: 999px;
+  animation: audioWave 1s ease-in-out infinite alternate;
+}
+
+.audio-wave-anim span:nth-child(1) { animation-delay: 0.1s; height: 35%; }
+.audio-wave-anim span:nth-child(2) { animation-delay: 0.3s; height: 80%; }
+.audio-wave-anim span:nth-child(3) { animation-delay: 0.2s; height: 100%; }
+.audio-wave-anim span:nth-child(4) { animation-delay: 0.4s; height: 60%; }
+.audio-wave-anim span:nth-child(5) { animation-delay: 0.15s; height: 40%; }
+
+@keyframes audioWave {
+  0% { transform: scaleY(0.3); }
+  100% { transform: scaleY(1); }
+}

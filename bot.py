@@ -158,7 +158,7 @@ TRANSLATIONS = {
         "menu_bonuses": "💰 Bonuslar",
         "menu_camera": "📹 Kamera",
         "menu_settings": "⚙️ Sozlamalar",
-        "greeting": "Salom! Siz <b>{role}</b> sifatida tizimga kirdingiz.\nQuyidagi menyudan kerakli bo'limni tanlang:",
+        "greeting": "Salom, <b>Shef</b>! Siz <b>{role}</b> sifatida tizimga kirdingiz.\nQuyidagi menyudan kerakli bo'limni tanlang:",
         "no_access": "Kechirasiz, sizda ushbu botdan foydalanish huquqi yo'q. Agar bu xato bo'lsa, tizim administratoriga murojaat qiling.",
         "operator_greeting": "Salom, {name}! Siz operator sifatida o'z suhbatlaringizni ko'rib, baho berishingiz mumkin. Yangi suhbat tahlil qilinganda sizga xabar boradi.",
         "role_manager": "Rahbar", "role_deputy": "O'rinbosar", "role_hr": "HR xodimi", "role_admin": "Admin",

@@ -2,7 +2,6 @@
   "_izoh": "Yangi foydalanuvchiga botdan foydalanish huquqini shu faylga qo'lda yozib berasiz. U shu Telegram akkaunti bilan botga /start bosgach, yozuv avtomatik ro'yxatdan o'tadi.",
   "_managers_izoh": "Kalit — odamning Telegram @username'i (boshida @ belgisiz). Qiymat — rol: manager, deputy, hr yoki admin.",
   "managers": {
-    "superman_uzb": "manager",
     "ds210": "manager",
     "tasnif_konsalting": "manager",
     "abdulquddus": "admin",

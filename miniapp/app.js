@@ -1039,27 +1039,124 @@ function viewCamera() {
 
 // =========================================================================
 // =========================================================================
-// 7. INTIZOM AI CHAT — 4 Ta Rol (Iqtisodchi, HR, Psixolog, Assistent)
+// 7. INTIZOM AI CHAT — Universal AI Maslahatchi (Charismatic Voice & Shef)
 // =========================================================================
-let currentAiMode = "hr"; // 'iqtisod', 'hr', 'psixolog', 'biznes'
 let currentAiTone = "normal";   // 'normal', 'formal', 'concise'
 let isAiThinking = false;
 let aiDailyRemaining = 28;
 let aiVoiceResponseOn = false;
+let currentSpeakingIndex = -1;
+let synth = window.speechSynthesis;
+let currentUtterance = null;
 
 let chatMessages = [
   { 
     role: "assistant", 
-    mode: "hr",
-    reasoning: "Kontekst yuklandi: 4 ta darcha audio tahlili, so'nggi xatolar va xodimlar ko'rsatkichlari faol.",
-    text: "Assalomu alaykum! Men sizning shaxsiy AI Yordamchingizman. Iqtisodiy tahlil, HR maslahatlari, xodimlar motivatsiyasi va biznes boshqaruvida yordam berishga tayyorman. Savolingizni yozing yoki pastdagi tezkor tahlillarni tanlang!" 
+    reasoning: "Universal AI (DeepThink) yuklandi: Korxona profili, 4 ta darcha audio monitoringi va biznes strategiyasi faol.",
+    text: "Assalomu alaykum, **Shef**! Men sizning shaxsiy Universal AI Maslahatchingizman. Biznes boshqaruv, dizayn xizmatlari, mijozlar oqimini oshirish, xodimlar muomalasi va moliyaviy tahlilda sizga yordam berishga tayyorman. Barcha javoblarimni matnda o'qishingiz yoki **🔊 Ovozli eshitish** tugmasi orqali qulay tinglashingiz mumkin. Qanday masalada tahlil olib boramiz, Shef?" 
   },
 ];
 
 function toggleAiVoiceResponse() {
   aiVoiceResponseOn = !aiVoiceResponseOn;
-  showToast(aiVoiceResponseOn ? "🔊 AI ovozli javob berish yoqildi" : "🔇 Ovozli javob o'chirildi", "graphic_eq");
+  if (!aiVoiceResponseOn) {
+    stopSpeech();
+  }
+  showToast(aiVoiceResponseOn ? "🔊 Avto-ovozli javob yoqildi (Shef)" : "🔇 Ovozli javob o'chirildi", "graphic_eq");
   viewAiChat();
+}
+
+function cleanTextForSpeech(raw) {
+  if (!raw) return "";
+  return raw
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/[#*•_`~\[\]\(\)]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function togglePlayVoice(btn, mIndex) {
+  if (currentSpeakingIndex === mIndex) {
+    stopSpeech();
+    return;
+  }
+  stopSpeech();
+  const msg = chatMessages[mIndex];
+  if (!msg || !msg.text) return;
+
+  speakText(msg.text, mIndex);
+}
+
+function speakText(text, mIndex) {
+  if (!synth) {
+    showToast("Kechirasiz, brauzeringiz ovozli sintezni qo'llab-quvvatlamaydi", "volume_off");
+    return;
+  }
+  synth.cancel();
+
+  const clean = cleanTextForSpeech(text);
+  currentUtterance = new SpeechSynthesisUtterance(clean);
+  
+  // Salobatli, mayin va jozibali ovoz sozlamalari (Ayoz tembri)
+  const voices = synth.getVoices();
+  const uzVoice = voices.find(v => v.lang.startsWith("uz")) 
+               || voices.find(v => v.lang.startsWith("tr"))
+               || voices.find(v => v.lang.startsWith("ru"))
+               || voices.find(v => v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("dmitry") || v.name.toLowerCase().includes("david"))
+               || voices[0];
+  
+  if (uzVoice) {
+    currentUtterance.voice = uzVoice;
+  }
+
+  currentUtterance.rate = 1.02; // Ravon va yoqimli tezlik
+  currentUtterance.pitch = 0.92; // Salobatli va jozibali tembr
+
+  currentSpeakingIndex = mIndex;
+  updateVoiceButtonsUI();
+
+  currentUtterance.onend = () => {
+    currentSpeakingIndex = -1;
+    updateVoiceButtonsUI();
+  };
+
+  currentUtterance.onerror = (e) => {
+    console.warn("TTS Error:", e);
+    currentSpeakingIndex = -1;
+    updateVoiceButtonsUI();
+  };
+
+  synth.speak(currentUtterance);
+}
+
+function stopSpeech() {
+  if (synth) synth.cancel();
+  currentSpeakingIndex = -1;
+  updateVoiceButtonsUI();
+}
+
+function updateVoiceButtonsUI() {
+  const btns = document.querySelectorAll(".ai-audio-play-btn");
+  btns.forEach((btn) => {
+    const idx = parseInt(btn.getAttribute("data-msg-index"), 10);
+    const isPlaying = idx === currentSpeakingIndex;
+    const wave = btn.parentElement?.querySelector(".audio-wave-anim");
+    const icon = btn.querySelector(".material-symbols-outlined");
+    const label = btn.querySelector(".audio-btn-text");
+
+    if (isPlaying) {
+      btn.classList.add("is-playing");
+      if (icon) icon.textContent = "stop_circle";
+      if (label) label.textContent = "To'xtatish";
+      if (wave) wave.classList.remove("hidden");
+    } else {
+      btn.classList.remove("is-playing");
+      if (icon) icon.textContent = "volume_up";
+      if (label) label.textContent = "🔊 Ovozli eshitish";
+      if (wave) wave.classList.add("hidden");
+    }
+  });
 }
 
 function viewAiChat() {
@@ -1069,7 +1166,7 @@ function viewAiChat() {
     <div class="view-header" style="margin-bottom:10px;">
       <div class="view-title-box">
         <h2>${t("chat_title")}</h2>
-        <p>HR, Biznes Strategiya, Moliya va Psixologik Tahlil (All-in-One)</p>
+        <p>HR, Biznes Strategiya, Moliya va Psixologik Tahlil (Universal AI)</p>
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
         ${hasUserChatted ? `
@@ -1083,16 +1180,14 @@ function viewAiChat() {
       </div>
     </div>
 
-    <!-- AI Stage (fon 2.jpg bilan 100% mos) -->
+    <!-- AI Stage -->
     <div class="ai-stage-container ${hasUserChatted ? 'chat-active-full' : ''}">
       
-      <!-- 1. YUQORIDAGI MATN KIRITISH KAPSULASI (TOP PROMPT CAPSULE + AMBIENT AURA) -->
+      <!-- 1. YUQORIDAGI MATN KIRITISH KAPSULASI -->
       <div class="ai-capsule-outer-wrap">
-        <!-- Chap to'q sariq va o'ng moviy nurlar (fon 2.jpg dagi aura) -->
         <div class="capsule-ambient-glow left-orange"></div>
         <div class="capsule-ambient-glow right-blue"></div>
 
-        <!-- Fon orqasidagi matrix kodlar (fon 2.jpg dagi matn) -->
         <div class="capsule-matrix-text left-matrix" aria-hidden="true">
           <div>L X H D Q V • + # X & • H</div>
           <div>T U • D C • N + Z • C - N</div>
@@ -1109,7 +1204,7 @@ function viewAiChat() {
             <textarea 
               id="chat-input" 
               class="ai-textarea" 
-              placeholder="Savolingizni yozing... / Ask anything..." 
+              placeholder="Savolingizni yozing, Shef... / Ask anything..." 
               rows="1"
               onkeydown="handleChatKeyDown(event)"
             ></textarea>
@@ -1117,7 +1212,7 @@ function viewAiChat() {
 
           <div class="ai-capsule-bottom-bar">
             <div class="ai-left-controls">
-              <button class="ai-pill-btn icon-only" title="Hujjat yoki Rasm biriktirish" onclick="showToast('📎 Rasm/Audio/Hujjat biriktirildi', 'attach_file')">
+              <button class="ai-pill-btn icon-only" title="Hujjat yoki Rasm biriktirish" onclick="showToast('📎 Fayl/Audio biriktirildi', 'attach_file')">
                 <span class="material-symbols-outlined" style="font-size:17px;">add</span>
               </button>
               
@@ -1134,11 +1229,11 @@ function viewAiChat() {
             </div>
 
             <div class="ai-right-controls">
-              <button class="ai-pill-btn ${aiVoiceResponseOn ? 'active-mode' : ''}" onclick="toggleAiVoiceResponse()" title="Ovozli javob (TTS)">
+              <button class="ai-pill-btn ${aiVoiceResponseOn ? 'active-mode' : ''}" onclick="toggleAiVoiceResponse()" title="Avto-ovozli javob">
                 <span class="material-symbols-outlined" style="font-size:15px; color:${aiVoiceResponseOn ? '#10b981' : '#38bdf8'};">
                   ${aiVoiceResponseOn ? 'volume_up' : 'graphic_eq'}
                 </span>
-                <span>${aiVoiceResponseOn ? 'TTS On' : 'Voice'}</span>
+                <span>${aiVoiceResponseOn ? 'Avto-Ovoz On' : 'Ovozli'}</span>
               </button>
 
               <button class="ai-send-gradient-btn" id="ai-send-btn" onclick="submitChatMessage()" title="Yuborish">
@@ -1149,9 +1244,9 @@ function viewAiChat() {
         </div>
       </div>
 
-      <!-- 2. O'RTA QISM: XABARLAR MAYDONI (MESSAGES STREAM) -->
+      <!-- 2. O'RTA QISM: XABARLAR MAYDONI -->
       <div class="chat-messages-area" id="chat-box">
-        ${chatMessages.map((m) => `
+        ${chatMessages.map((m, idx) => `
           <div class="chat-bubble ${m.role}">
             ${m.reasoning ? `
               <div class="deepthink-reasoning-box">
@@ -1163,9 +1258,16 @@ function viewAiChat() {
               </div>
             ` : ""}
             <div class="chat-text-content" style="white-space:pre-line; line-height:1.6; font-size:13.5px;">${formatAiMessageText(m.text)}</div>
-            ${m.audio_url ? `
-              <div style="margin-top:8px;">
-                <audio controls src="${m.audio_url}" style="width:100%; height:32px; border-radius:6px;"></audio>
+            
+            ${m.role === "assistant" ? `
+              <div class="ai-audio-bar">
+                <button class="ai-audio-play-btn ${currentSpeakingIndex === idx ? 'is-playing' : ''}" data-msg-index="${idx}" onclick="togglePlayVoice(this, ${idx})">
+                  <span class="material-symbols-outlined" style="font-size:16px;">${currentSpeakingIndex === idx ? 'stop_circle' : 'volume_up'}</span>
+                  <span class="audio-btn-text">${currentSpeakingIndex === idx ? "To'xtatish" : "🔊 Ovozli eshitish"}</span>
+                </button>
+                <div class="audio-wave-anim ${currentSpeakingIndex === idx ? '' : 'hidden'}">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
               </div>
             ` : ""}
           </div>
@@ -1173,7 +1275,7 @@ function viewAiChat() {
         ${isAiThinking ? `
           <div class="chat-bubble assistant" style="display:flex; align-items:center; gap:8px; opacity:0.85;">
             <span class="material-symbols-outlined" style="font-size:18px; color:#c084fc; animation:spin 1.5s linear infinite;">psychology</span>
-            <span>Universal AI tahlil qilmoqda (DeepThink 2.5)...</span>
+            <span>Universal AI tahlil qilmoqda (Shef uchun DeepThink)...</span>
           </div>
         ` : ""}
       </div>
@@ -1243,8 +1345,8 @@ function resetAiChat() {
   chatMessages = [
     { 
       role: "assistant", 
-      reasoning: "Universal AI Maslahatchi tizimi ishga tushirildi. Biznes strategiya, HR boshqaruv, moliya va psixologik tahlil modullari tayyor.",
-      text: "Assalomu alaykum! Men sizning Universal AI Maslahatchingizman. Biznesingizni rivojlantirish, mijozlar oqimini oshirish, xodimlar muomalasini nazorat qilish va moliyaviy KPI masalalarida yordam berishga tayyorman. Savolingizni yozing!" 
+      reasoning: "Universal AI (DeepThink) yuklandi: Korxona profili, 4 ta darcha audio monitoringi va biznes strategiyasi faol.",
+      text: "Assalomu alaykum, **Shef**! Men sizning shaxsiy Universal AI Maslahatchingizman. Biznes boshqaruv, dizayn xizmatlari, mijozlar oqimini oshirish, xodimlar muomalasi va moliyaviy tahlilda sizga yordam berishga tayyorman. Barcha javoblarimni matnda o'qishingiz yoki **🔊 Ovozli eshitish** tugmasi orqali qulay tinglashingiz mumkin. Qanday masalada tahlil olib boramiz, Shef?" 
     },
   ];
   showToast("Chat tozalandi", "refresh");
@@ -1267,7 +1369,7 @@ function toggleToneMenu() {
 }
 
 function toggleVoiceInput() {
-  showToast("🎙 Ovoz yozish faollashtirildi (Gapiring...)", "graphic_eq");
+  showToast("🎙 Ovoz yozish faollashtirildi (Gapiring, Shef...)", "graphic_eq");
 }
 
 function submitChatMessage() {
@@ -1309,13 +1411,16 @@ async function sendUserMessage(text) {
       const data = await res.json();
       if (data.text) {
         isAiThinking = false;
+        const newMsgIndex = chatMessages.length;
         chatMessages.push({
           role: "assistant",
           reasoning: data.reasoning || "DeepThink 2.5 — Mantiqiy tahlil yakunlandi.",
-          text: data.text,
-          audio_url: aiVoiceResponseOn ? "https://actions.google.com/sounds/v1/ambiences/office_room.ogg" : null
+          text: data.text
         });
         viewAiChat();
+        if (aiVoiceResponseOn) {
+          speakText(data.text, newMsgIndex);
+        }
         return;
       }
     }
@@ -1333,19 +1438,19 @@ async function sendUserMessage(text) {
     if (lower.includes("lokatsiya") || lower.includes("joy") || lower.includes("hudud") || lower.includes("ofis")) {
       reasoning = `1. Lokatsiya tahlili: Piyodalar va transport oqimi, raqobatchilar masofasi va maqsadli auditoriya mezonlari ko'rib chiqildi.\n2. Dizayn studiyasi/ofis uchun qulaylik koeffitsiyenti baholandi.`;
       
-      reply = "Albatta, ofisingiz joylashgan hudud lokatsiyasini yuborsangiz, quyidagi muhim omillar bo'yicha to'liq tahlil va amaliy yordam bera olaman:\n\n" +
+      reply = "Albatta, <b>Shef</b>! Ofisingiz joylashgan hudud lokatsiyasini yuborsangiz, quyidagi muhim omillar bo'yicha to'liq tahlil va amaliy yordam bera olaman:\n\n" +
               "📍 <b>Lokatsiya bo'yicha qanday yordam bera olaman:</b>\n" +
               "1. <b>Mijozlar uchun qulaylik:</b> Piyoda va avtomobilda kelish, metro yoki asosiy transport bekatlariga yaqinligi, parkovka (avtoturargoh) mavjudligi;\n" +
               "2. <b>Maqsadli Auditoriya:</b> Hududdagi biznes markazlar, savdo majmualari va sizning dizayn xizmatlaringizga ehtiyoji bor tadbirkorlar zichligi;\n" +
               "3. <b>Raqobatchilar Joylashuvi:</b> Shu atrofda xuddi shunday dizayn yoki reklama agentliklari bormi-yo'qligini tahlil qilish;\n" +
               "4. <b>Tashqi Reklama & Ko'rinuvchanlik:</b> Bino peshtoqiga banner yoki belgi (peshlavha) o'rnatish qulayligi.\n\n" +
-              "📌 <b>Boshlash uchun:</b> Hudud nomini, mo'ljalni yoki xarita linkini (koordinatalarini) yozib yuboring!";
+              "📌 <b>Boshlash uchun, Shef:</b> Hudud nomini, mo'ljalni yoki xarita linkini (koordinatalarini) yozib yuboring!";
 
     // 2. DIZAYN XIZMATI VA MIJOZLAR OQIMI / MUOMALA NAZORATI
     } else if (lower.includes("dizayn") || (lower.includes("mijoz") && (lower.includes("kopay") || lower.includes("oshir") || lower.includes("jalb")))) {
       reasoning = `1. Biznes tahlili: Dizayn xizmatlari bozorida mijozlarni jalb qilish va saqlash modellari o'rganildi.\n2. HR & Muloqot standarti: Dizayner/menejer va buyurtmachi o'rtasidagi sifat mezonlari (5 ta sifat omili) tekshirildi.\n3. Amaliy, 2 qismli kompleks strategiya shakllantirildi.`;
       
-      reply = "Dizayn xizmatlari sohasida mijozlarni ko'paytirish va xodimlar muomalasini nazorat qilish bo'yicha amaliy kompleks tavsiyalar:\n\n" +
+      reply = "<b>Shef</b>, dizayn xizmatlari sohasida mijozlarni ko'paytirish va xodimlar muomalasini nazorat qilish bo'yicha amaliy kompleks tavsiyalarim:\n\n" +
               "🎨 <b>1. Mijozlar Oqimini Ko'paytirish (Marketing & Savdo):</b>\n" +
               "• <b>Keyslar (Case-Study) Portfolio:</b> Shunchaki rasm emas, balki «Mijoz muammosi ➔ Dizayn yechimi ➔ Erishilgan natija (savdo oshishi)» formatida portfolio taqdim eting;\n" +
               "• <b>Ijtimoiy tarmoqlar (Instagram / Telegram / Behance):</b> «Oldin va Keyin» (Before/After) taqqoslashlari va dizayn jarayoni (backstage) videolarini muntazam ulashing;\n" +
@@ -1356,35 +1461,35 @@ async function sendUserMessage(text) {
               "• <b>Tezkor Javob Qoidasi (SLA):</b> Mijoz murojaat qilganda 10-15 daqiqa ichida xushmuomala javob qaytarilishini yo'lga qo'ying;\n" +
               "• <b>5 Ta Sifat Mezoni:</b> Salomlashish, tinglash madaniyati, professional tushuntirish, xushmuomalalik va minnatdorlik bilan xayrlashish;\n" +
               "• <b>Sifat Bonusi:</b> Mijozlardan a'lo baho va ijobiy fikr (otzyv) olgan xodimlarga oylik qo'shimcha bonus bering.\n\n" +
-              "💡 <b>Xulosa:</b> Sifatli dizayn + samimiy va tezkor muloqot xizmat narxini oshirishga va doimiy sodiq mijozlar oqimini ta'minlashga yordam beradi.";
+              "💡 <b>Xulosa, Shef:</b> Sifatli dizayn + samimiy va tezkor muloqot xizmat narxini oshirishga va doimiy sodiq mijozlar oqimini ta'minlashga yordam beradi.";
 
     // 3. INTIZOMIY CHORALAR BO'YICHA SAMIMIY VA BOSQICHMA-BOSQICH HR STANDARTI
     } else if (lower.includes("jazo") || lower.includes("bo'shat") || lower.includes("jarima") || lower.includes("chora")) {
       reasoning = `1. Mehnat munosabatlari va HR psixologiyasi tahlil qilindi.\n2. Bosqichma-bosqich intizomiy choralar ketma-ketligi belgilandi.`;
       
-      reply = "Bu vaziyatda darhol eng qattiq chorani (jarima yoki ishdan bo'shatish) qo'llashdan oldin, vaziyat sabablarini o'rganishni tavsiya qilaman.\n\n" +
+      reply = "<b>Shef</b>, bu vaziyatda darhol eng qattiq chorani (jarima yoki ishdan bo'shatish) qo'llashdan oldin, vaziyat sabablarini o'rganishni tavsiya qilaman.\n\n" +
               "📌 <b>Tavsiya etiladigan bosqichma-bosqich yondashuv:</b>\n\n" +
               "1. <b>Og'zaki suhbat:</b> Xodim bilan xolis, yakkama-yakka suhbat o'tkazib, kamchilik sababini aniqlang.\n" +
               "2. <b>Yozma ogohlantirish:</b> Agar holat ikkinchi marta takrorlansa, rasmiy yozma ogohlantirish bering;\n" +
               "3. <b>Hayfsan / Qattiq chora:</b> Faqat tizimli va takroriy qonunbuzarlik bo'lsagina jiddiy intizomiy chora qo'llang.\n\n" +
-              "Bu yondashuv jamoani saqlab qolish va adolatli ish muhitini ta'minlash uchun xavfsizroqdir.";
+              "Bu yondashuv jamoani saqlab qolish va adolatli ish muhitini ta'minlash uchun xavfsizroqdir, Shef.";
 
     // 4. BUGUNGI XATOLAR TAHLILI
     } else if (lower.includes("xato") || lower.includes("kamchilik")) {
       reasoning = `1. 4 ta darcha audio yozuvlari va muloqot transkriptlari tekshirildi.\n2. Salomlashish va mijoz gapini bo'lish holatlari filtrlandi.`;
       
-      reply = "Bugungi tahlil bo'yicha eng ko'p kamchilik 3-darcha xodimi Jasur Bekchanovda qayd etildi (48 ball).\n\n" +
+      reply = "<b>Shef</b>, bugungi tahlil bo'yicha eng ko'p kamchilik 3-darcha xodimi Jasur Bekchanovda qayd etildi (48 ball).\n\n" +
               "⚠️ <b>Aniqlangan asosiy sabablar:</b>\n" +
               "• Salomlashish tartibiga rioya qilmadi;\n" +
               "• Mijoz so'zini oxirigacha eshitmasdan gapini bo'ldi;\n" +
               "• Xizmat yakunida minnatdorlik bildirmadi.\n\n" +
-              "💡 <b>Tavsiya:</b> Xodim bilan 10 daqiqalik yakkama-yakka suhbat o'tkazib, mijoz so'zidan keyin 3 soniya pauza saqlash qoidasini eslatish lozim.";
+              "💡 <b>Tavsiya, Shef:</b> Xodim bilan 10 daqiqalik yakkama-yakka suhbat o'tkazib, mijoz so'zidan keyin 3 soniya pauza saqlash qoidasini eslatish lozim.";
 
     // 5. STRESS VA JAMOA MUHITI
     } else if (lower.includes("stress") || lower.includes("muhit") || lower.includes("charchoq")) {
       reasoning = `1. Xodimlar audio balandligi, intonatsiya va suhbatlar soni tahlil qilindi.\n2. Emotsional charchoq ko'rsatkichi hisoblandi.`;
       
-      reply = "Jamoaning umumiy stress darajasi: <b>18% (Barqaror & Qoniqarli)</b>.\n\n" +
+      reply = "<b>Shef</b>, jamoaning umumiy stress darajasi: <b>18% (Barqaror & Qoniqarli)</b>.\n\n" +
               "📊 <b>Xodimlar bo'yicha holat:</b>\n" +
               "• 1-darcha (Dilnoza Karimova): Bugun 35 ta mijoz qabul qildi, biroz emotsional charchoq sezilmoqda. Unga 15 daqiqalik tanaffus tavsiya etiladi;\n" +
               "• 4-darcha (Nigora Umarova): A'lo darajada emotsional barqarorlik (96 ball);\n" +
@@ -1394,7 +1499,7 @@ async function sendUserMessage(text) {
     } else if (lower.includes("bonus") || lower.includes("kpi") || lower.includes("maosh") || lower.includes("daromad")) {
       reasoning = `1. Sifat formulasi (5 ta mezon) va suhbatlar soni normasi taqqoslandi.\n2. Oylik bonuslar taqsimoti hisoblab chiqildi.`;
       
-      reply = "Joriy oy uchun xodimlarning hisoblangan bonuslar taqsimoti:\n\n" +
+      reply = "<b>Shef</b>, joriy oy uchun xodimlarning hisoblangan bonuslar taqsimoti:\n\n" +
               "💰 <b>Xodimlar ko'rsatkichlari:</b>\n" +
               "1. <b>Nigora Umarova (4-darcha):</b> 500,000 so'm (100% bonus, o'rtacha 96 ball);\n" +
               "2. <b>Dilnoza Karimova (1-darcha):</b> 420,000 so'm (93% bonus, o'rtacha 89 ball);\n" +
@@ -1405,22 +1510,25 @@ async function sendUserMessage(text) {
     } else {
       reasoning = `1. «${text}» so'rovi bo'yicha biznes, HR va tahliliy mezonlar kompleks ko'rib chiqildi.\n2. Universal AI ekspert xulosasi shakllantirildi.`;
       
-      reply = `«${text}» bo'yicha tavsiyalar:\n\n` +
+      reply = `<b>Shef</b>, «${text}» bo'yicha tizimli tavsiyalarim:\n\n` +
               `📌 <b>1. Boshqaruv & Strategiya:</b> Jarayonlarni aniq reglamentlash va xodimlar o'rtasida mas'uliyatni to'g'ri taqsimlash samaradorlikni 25-30% ga oshiradi.\n` +
               `📌 <b>2. Sifat Nazorati:</b> Doimiy mijozlar muloqotini kuzatib borish va haftalik qisqa brifinglar o'tkazish xatolarni 2 barobar kamaytiradi.\n` +
               `📌 <b>3. Moliyaviy Natija:</b> Xodimlarni aniq KPI va sifat ko'rsatkichlariga bog'lash daromadning barqaror o'sishiga zamin yaratadi.\n\n` +
-              `Agar biror yo'nalish bo'yicha batafsilroq reja kerak bo'lsa, aniqroq savol berishingiz mumkin!`;
+              `Agar biror yo'nalish bo'yicha batafsilroq reja kerak bo'lsa, ayting, Shef!`;
     }
 
     isAiThinking = false;
+    const newMsgIndex = chatMessages.length;
     chatMessages.push({ 
       role: "assistant", 
       reasoning, 
-      text: reply,
-      audio_url: aiVoiceResponseOn ? "https://actions.google.com/sounds/v1/ambiences/office_room.ogg" : null
+      text: reply
     });
     viewAiChat();
-  }, 1200);
+    if (aiVoiceResponseOn) {
+      speakText(reply, newMsgIndex);
+    }
+  }, 1000);
 }
 
 // =========================================================================
